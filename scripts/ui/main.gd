@@ -30,6 +30,7 @@ func _ready() -> void:
 	_wire_navigation()
 	_wire_screens()
 	$AITimer.timeout.connect(_ai_step)
+	$BattleEffects.finished.connect(_battle_presentation_finished)
 	$BattleOverlay/Content/Close.pressed.connect(_close_battle_overlay)
 	$BattleOverlay/Content/Pages/Previous.pressed.connect(_change_history_page.bind(-1))
 	$BattleOverlay/Content/Pages/Next.pressed.connect(_change_history_page.bind(1))
@@ -108,11 +109,13 @@ func _wire_screens() -> void:
 	screen("Battle").get_node("Bottom/Concede").pressed.connect(_ask_concede)
 	screen("Results").get_node("Again").pressed.connect(show_screen.bind("Setup"))
 	screen("Results").get_node("Home").pressed.connect(show_screen.bind("Home"))
-	for key: String in ["Music", "SFX", "Animations"]:
+	for key: String in ["Music", "SFX", "Animations", "Battle_effects"]:
 		screen("Settings").get_node(key).toggled.connect(_setting_changed.bind(key.to_lower()))
 
 
 func show_screen(screen_name: String) -> void:
+	$BattleEffects.cancel()
+	Audio.set_battle_context(screen_name == "Battle")
 	var returning_from_detail: bool = current_screen == "Detail"
 	if int(Profile.data.starter) < 0 and screen_name != "Settings":
 		screen_name = "Home"
@@ -149,7 +152,7 @@ func show_screen(screen_name: String) -> void:
 		"Results":
 			_render_results()
 		"Settings":
-			for key: String in ["Music", "SFX", "Animations"]:
+			for key: String in ["Music", "SFX", "Animations", "Battle_effects"]:
 				screen("Settings").get_node(key).set_pressed_no_signal(
 					Profile.data.settings[key.to_lower()]
 				)
@@ -462,6 +465,8 @@ func _resume_battle() -> void:
 
 
 func _render_battle() -> void:
+	if $BattleEffects.busy:
+		return
 	if rules.state.is_empty():
 		show_screen("Setup")
 		return
@@ -655,22 +660,30 @@ func _make_battle_card(parent: Node, id: String, unit: Dictionary = {}) -> CardV
 
 
 func _open_unit_overview(target: int) -> void:
+	if $BattleEffects.busy:
+		return
 	_select_unit(target)
 	_inspect_selection()
 
 
 func _open_hand_overview(index: int) -> void:
+	if $BattleEffects.busy:
+		return
 	_select_hand(index)
 	_inspect_selection()
 
 
 func _inspect_enemy_unit(target: int) -> void:
+	if $BattleEffects.busy:
+		return
 	var unit: Dictionary = rules.get_unit(1, target)
 	if not unit.is_empty():
 		_inspect_battle_card(unit.id, unit)
 
 
 func _inspect_selection() -> void:
+	if $BattleEffects.busy:
+		return
 	var player: Dictionary = rules.state.players[0]
 	if selected_mode == "hand" and selected_hand >= 0 and selected_hand < player.hand.size():
 		_inspect_battle_card(player.hand[selected_hand], {}, true)
@@ -783,6 +796,8 @@ func _perform_overview_action(action: Dictionary) -> void:
 
 
 func _show_history() -> void:
+	if $BattleEffects.busy:
+		return
 	history_page = maxi(0, (rules.state.log.size() - 1) / HISTORY_PAGE_SIZE)
 	_render_history()
 
@@ -824,7 +839,12 @@ func _perform(action: Dictionary) -> void:
 
 
 func _apply_battle_action(player_index: int, action: Dictionary) -> bool:
+	if $BattleEffects.busy:
+		return false
+	var damage: int = 0
 	var before: Dictionary = rules.state.duplicate(true)
+	if action.type == "attack" and rules.legal_actions(player_index).has(action):
+		damage = rules.damage_for(player_index, int(action.attack))
 	if not rules.apply_action(player_index, action):
 		_toast("That action is no longer available.")
 		return false
@@ -833,12 +853,19 @@ func _apply_battle_action(player_index: int, action: Dictionary) -> bool:
 		return false
 	$BattleOverlay.hide()
 	$ModalBlocker.hide()
-	Audio.play_cue("attack" if action.type == "attack" else "tap")
+	$AITimer.stop()
 	selected_hand = -1
 	selected_mode = "unit"
-	_render_battle()
+	$BattleEffects.play_action(
+		screen("Battle"), before, rules.state.duplicate(true), player_index, action, damage
+	)
 
 	return true
+
+
+func _battle_presentation_finished() -> void:
+	if current_screen == "Battle":
+		_render_battle()
 
 
 func _persist_battle() -> bool:
@@ -854,6 +881,7 @@ func _persist_battle() -> bool:
 func _ai_step() -> void:
 	if (
 		current_screen != "Battle"
+		or $BattleEffects.busy
 		or $Modal.visible
 		or $BattleOverlay.visible
 		or rules.current_actor() != 1
@@ -866,6 +894,8 @@ func _ai_step() -> void:
 
 
 func _ask_concede() -> void:
+	if $BattleEffects.busy:
+		return
 	_modal(
 		"Concede this battle?",
 		"Your rival will win. Conceding awards no coins.",
@@ -969,6 +999,7 @@ func _notification(what: int) -> void:
 			show_screen("Home")
 	elif what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_CLOSE_REQUEST:
 		$AITimer.stop()
+		$BattleEffects.cancel()
 		Profile.save()
 		if what == NOTIFICATION_WM_CLOSE_REQUEST:
 			Audio.shutdown()

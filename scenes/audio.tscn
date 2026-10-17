@@ -3,4 +3,17 @@
 [node name="Audio" type="Node"]
 script = ExtResource("1")
 [node name="Music" type="AudioStreamPlayer" parent="."]
-[node name="SFX" type="AudioStreamPlayer" parent="."]
+[node name="BattleMusic" type="AudioStreamPlayer" parent="."]
+[node name="Voices" type="Node" parent="."]
+
+[node name="Voice0" type="AudioStreamPlayer" parent="Voices"]
+
+[node name="Voice1" type="AudioStreamPlayer" parent="Voices"]
+
+[node name="Voice2" type="AudioStreamPlayer" parent="Voices"]
+
+[node name="Voice3" type="AudioStreamPlayer" parent="Voices"]
+
+[node name="Voice4" type="AudioStreamPlayer" parent="Voices"]
+
+[node name="Voice5" type="AudioStreamPlayer" parent="Voices"]

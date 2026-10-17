@@ -187,12 +187,16 @@ func _battle_scenarios() -> void:
 	ui._select_unit(0)
 	ui._select_unit(0)
 	battle.get_node("Actions/Action0").pressed.emit()
+	if ui.get_node("BattleEffects").busy:
+		await ui.get_node("BattleEffects").finished
 	check(
 		int(ui.rules.state.players[0].bench[0].energy) == 3 and not ui.rules.state.energy_ready,
 		"context slot attaches once to selected bench"
 	)
 	ui._select_hand(0)
 	battle.get_node("Actions/Action2").pressed.emit()
+	if ui.get_node("BattleEffects").busy:
+		await ui.get_node("BattleEffects").finished
 	check(
 		(
 			ui.rules.state.support_used

@@ -95,12 +95,14 @@ func _ready() -> void:
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
 		DirAccess.make_dir_recursive_absolute("res://builds/previews")
-		get_viewport().get_texture().get_image().save_png(
-			"res://builds/previews/battle-window.png"
-		)
+		get_viewport().get_texture().get_image().save_png("res://builds/previews/battle-window.png")
 	ui._perform({"type": "attach", "target": -1})
+	if ui.get_node("BattleEffects").busy:
+		await ui.get_node("BattleEffects").finished
 	check(not ui.rules.state.energy_ready, "UI energy action")
 	ui._perform({"type": "concede"})
+	if ui.get_node("BattleEffects").busy:
+		await ui.get_node("BattleEffects").finished
 	check(
 		ui.current_screen == "Results" and int(Profile.data.coins) == 0,
 		"concede results and no reward"

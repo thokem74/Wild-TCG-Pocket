@@ -33,7 +33,7 @@ func fresh_data() -> Dictionary:
 		"battle": {},
 		"rewarded_matches": [],
 		"tutorial": false,
-		"settings": {"music": true, "sfx": true, "animations": true}
+		"settings": {"music": true, "sfx": true, "animations": true, "battle_effects": true}
 	}
 
 
@@ -94,7 +94,10 @@ func _read_save(path: String) -> Dictionary:
 		return {}
 	if parsed.pending_pack.size() not in [0, 5]:
 		return {}
-	for key: String in ["music", "sfx", "animations"]:
+	# Older version-1 saves predate the independent battle effects setting.
+	if not parsed.settings.has("battle_effects"):
+		parsed.settings.battle_effects = true
+	for key: String in ["music", "sfx", "animations", "battle_effects"]:
 		if not parsed.settings.get(key) is bool:
 			return {}
 	return parsed

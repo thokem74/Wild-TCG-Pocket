@@ -74,6 +74,7 @@ func _ready() -> void:
 	)
 	check(ui._overview_actions().size() == 2, "bench offers only attachment and retreat")
 	_press_overview_action("retreat")
+	await _finish_effects()
 	check(ui.rules.state.players[0].active.id == "cinderhorn", "overview retreat uses chosen bench")
 	check(not ui.get_node("BattleOverlay").visible, "successful action closes overview")
 	check(Profile.data.battle == ui.rules.state, "successful action persisted")
@@ -87,6 +88,7 @@ func _ready() -> void:
 	)
 	check(ui._overview_actions().size() == 1, "hand creature offers only deployment")
 	_press_overview_action("deploy")
+	await _finish_effects()
 	check(ui.rules.state.players[0].bench.size() == 3, "overview deploys creature")
 
 	_reset_battle()
@@ -97,6 +99,7 @@ func _ready() -> void:
 	await _check_overview_fit("four support targets")
 	await _capture_overview("support")
 	_press_overview_action("support", 1)
+	await _finish_effects()
 	check(
 		int(ui.rules.state.players[0].bench[1].hp) == 110 and ui.rules.state.support_used,
 		"overview support heals chosen ally"
@@ -105,6 +108,7 @@ func _ready() -> void:
 	ui._open_hand_overview(2)
 	check(str(ui._overview_actions()[0].text).begins_with("Move from"), "relay labels donor")
 	_press_overview_action("support", 0)
+	await _finish_effects()
 	check(
 		(
 			int(ui.rules.state.players[0].active.energy) == 3
@@ -116,6 +120,7 @@ func _ready() -> void:
 	_reset_battle()
 	ui._open_unit_overview(-1)
 	_press_overview_action("attack")
+	await _finish_effects()
 	check(
 		int(ui.rules.state.players[1].active.hp) == 30,
 		"overview attack includes boost and weakness"
@@ -133,6 +138,7 @@ func _ready() -> void:
 	ui._open_unit_overview(1)
 	check(ui._overview_actions().size() == 1, "replacement offers only chosen promotion")
 	_press_overview_action("promote")
+	await _finish_effects()
 	check(
 		ui.rules.state.players[0].active.id == "thornsprite",
 		"overview promotes selected replacement"
@@ -189,6 +195,7 @@ func _ready() -> void:
 	check(DirAccess.make_dir_absolute(temporary) == OK, "create isolated save failure fixture")
 	var saved: Dictionary = Profile.data.battle.duplicate(true)
 	_press_overview_action("attach")
+	await _finish_effects()
 	check(
 		ui.rules.state == before and Profile.data.battle == saved,
 		"save failure rolls back both battle copies"
@@ -201,6 +208,7 @@ func _ready() -> void:
 	await _check_overview_fit("save error")
 	check(DirAccess.remove_absolute(temporary) == OK, "remove isolated save failure fixture")
 	_press_overview_action("attach")
+	await _finish_effects()
 	check(
 		not ui.get_node("BattleOverlay").visible and not ui.rules.state.energy_ready,
 		"retry commits once and closes overview"
@@ -321,3 +329,9 @@ func _capture_overview(label: String) -> void:
 	canvas.get_texture().get_image().save_png(
 		"res://builds/previews/overview-%s%s.png" % [label, suffix]
 	)
+
+
+func _finish_effects() -> void:
+	if ui.get_node("BattleEffects").busy:
+		await ui.get_node("BattleEffects").finished
+	ui.get_node("AITimer").stop()

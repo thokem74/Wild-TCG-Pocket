@@ -21,6 +21,10 @@ custom_minimum_size = Vector2(0, 72)
 text = "Reveal animations"
 custom_minimum_size = Vector2(0, 72)
 
+[node name="Battle_effects" type="CheckButton" parent="."]
+text = "Battle effects"
+custom_minimum_size = Vector2(0, 72)
+
 [node name="Rules" type="Label" parent="."]
 mouse_filter = 2
 text = "HOW TO PLAY\n\nDeploy creatures from your hand onto your bench. Tap a guardian to attach your one energy orb each turn. Attacking ends your turn; energy stays attached.\n\nUse one support and retreat once per turn. Retreat discards the active creature’s listed energy cost.\n\nKnockouts score one point. Choose a replacement from your bench after a knockout. Reach three points to win.\n\nThe first player skips their first draw, energy and attack. Failing to draw loses; 60 turns is a draw."

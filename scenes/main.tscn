@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 [ext_resource type="Script" path="res://scripts/ui/main.gd" id="1"]
 [ext_resource type="Theme" path="res://assets/theme.tres" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/screens/home.tscn" id="3"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/screens/battle.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/screens/results.tscn" id="10"]
 [ext_resource type="PackedScene" path="res://scenes/screens/settings.tscn" id="11"]
+[ext_resource type="PackedScene" path="res://scenes/ui/battle_effects.tscn" id="12"]
 [node name="Wild" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -230,3 +231,5 @@ size_flags_horizontal = 3
 text = "Back to battle"
 custom_minimum_size = Vector2(0, 64)
 
+
+[node name="BattleEffects" parent="." instance=ExtResource("12")]

@@ -1,6 +1,7 @@
 extends Node
 
 var canvas: SubViewport
+var capture_suffix: String = ""
 
 
 func _ready() -> void:
@@ -10,7 +11,16 @@ func _ready() -> void:
 	canvas.size = (
 		Vector2i(720, 1560) if OS.get_cmdline_user_args().has("--tall") else Vector2i(720, 1280)
 	)
+	if OS.get_cmdline_user_args().has("--desktop"):
+		canvas.size = Vector2i(450, 800)
+		canvas.size_2d_override = Vector2i(720, 1280)
+		canvas.size_2d_override_stretch = true
 	canvas.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	capture_suffix = (
+		"-desktop"
+		if OS.get_cmdline_user_args().has("--desktop")
+		else ("-tall" if OS.get_cmdline_user_args().has("--tall") else "")
+	)
 	add_child(canvas)
 	var ui: Control = load("res://scenes/main.tscn").instantiate()
 	canvas.add_child(ui)
@@ -60,8 +70,5 @@ func _capture(label: String) -> void:
 	await RenderingServer.frame_post_draw
 	DirAccess.make_dir_recursive_absolute("res://builds/previews")
 	canvas.get_texture().get_image().save_png(
-		(
-			"res://builds/previews/%s%s.png"
-			% [label, "-tall" if OS.get_cmdline_user_args().has("--tall") else ""]
-		)
+		"res://builds/previews/%s%s.png" % [label, capture_suffix]
 	)

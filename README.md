@@ -19,9 +19,9 @@ Choose Flame, Tide, or Gale to receive a ready-to-play starter deck and three fr
 
 - **Cards:** filter by element, rarity, ownership, or name. Tap a card for its full attacks and artwork.
 - **Decks:** choose or create a deck, tap +/− to edit, then Save. Decks need exactly 20 owned cards, at least one creature, and at most two copies of each card. Unsaved changes remain while inspecting a card; leaving the deck editor otherwise discards the draft.
-- **Battle:** select a saved deck and difficulty. Tap a hand card, then its action to deploy or play it. Tap your active guardian or bench, then attach energy or retreat. Scroll the battle panel when needed to reach actions and the log; swipe the hand sideways to see more cards.
+- **Battle:** select a saved deck and difficulty. Tap a hand card, then its action to deploy or play it. Tap your active guardian or bench, then attach energy or retreat. The whole battle board and its controls fit on screen without vertical scrolling. Swipe the hand sideways to see more cards. Inspect opens full card rules; History opens paginated past moves. Both pause the AI until you return.
 - **Settings:** toggle music, sound effects, and reveal animations, or review the rules.
-- **Scrolling:** use the wide purple handles or the mouse wheel on desktop. On Android, swipe over cards to scroll; a card opens only after a tap is released without dragging.
+- **Scrolling:** scrollbars are hidden to leave more room for cards. Use the mouse wheel or trackpad on desktop. On Android, swipe over cards to scroll; a card opens only after a tap is released without dragging.
 
 ### Rules
 
@@ -37,8 +37,8 @@ Slots 1–4 independently have **80% Common / 20% Uncommon** odds. Slot 5 has **
 
 ## Project structure
 
-- `scenes/screens/`: editor-visible composition of every screen. `scenes/main.tscn` holds navigation, modal, and AI timer.
-- `scenes/ui/`: reusable card, board slot, deck row, and action scenes. `scenes/audio.tscn` authors the audio players.
+- `scenes/screens/`: editor-visible composition of every screen. `scenes/main.tscn` holds navigation, overlays, and the AI timer. Battle has a dedicated fixed container outside the shared page scroller.
+- `scenes/ui/`: reusable card, compact battle card, board slot, deck row, and action scenes. `scenes/audio.tscn` authors the audio players.
 - `scripts/data/` and `data/cards/`: typed card, attack, effect, and deck resources; the catalog autoload loads the explicit ID list in `data/catalog.json`.
 - `scripts/battle/`: serializable battle rules, legal-action validation, and public-information AI scoring.
 - `scripts/profile.gd`: local collection, deck editing, pack transactions, milestones, settings, and exactly-once match rewards.
@@ -67,6 +67,7 @@ XDG_DATA_HOME=/tmp/wild-tcg-tests godot --headless --path . tests/test_runner.ts
 XDG_DATA_HOME=/tmp/wild-tcg-ui-tests godot --headless --path . tests/ui_runner.tscn
 XDG_DATA_HOME=/tmp/wild-scroll-tests godot --headless --path . tests/scroll_runner.tscn
 XDG_DATA_HOME=/tmp/wild-tcg-visual godot --path . tests/visual_runner.tscn
+# Add -- --tall for 720×1560, or -- --desktop for exact 450×800 previews.
 ```
 
-The rules suite covers deck validation, opening hands, turn restrictions, actions, support effects, victory conditions, save/pack recovery, reward idempotence, and 180 deterministic AI matches. The visual runner writes portrait previews into `builds/previews/`. Android smoke-test evidence and final validation notes are recorded in `builds/VALIDATION.md`.
+The rules suite covers deck validation, opening hands, turn restrictions, actions, support effects, victory conditions, save/pack recovery, reward idempotence, and 180 deterministic AI matches. The visual runner writes portrait previews into `builds/previews/`. Android smoke-test evidence and final validation notes are recorded in `builds/VALIDATION.md`; the fixed battle layout and hidden-scrollbar update are documented in `builds/FIXED-BATTLE-VALIDATION.md`.

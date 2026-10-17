@@ -82,6 +82,22 @@ func _ready() -> void:
 	ui.rules.state.energy_ready = true
 	ui.rules.state.players[0].active.energy = 2
 	ui._render_battle()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	check(not ui.get_node("Safe/Layout/Scroll").visible, "battle does not use page scrolling")
+	check(
+		(
+			ui.screen("Battle").get_global_rect().end.y
+			<= ui.get_node("Safe/Layout/Nav").global_position.y
+		),
+		"battle fits above fixed navigation"
+	)
+	if DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		DirAccess.make_dir_recursive_absolute("res://builds/previews")
+		get_viewport().get_texture().get_image().save_png(
+			"res://builds/previews/battle-window.png"
+		)
 	ui._perform({"type": "attach", "target": -1})
 	check(not ui.rules.state.energy_ready, "UI energy action")
 	ui._perform({"type": "concede"})

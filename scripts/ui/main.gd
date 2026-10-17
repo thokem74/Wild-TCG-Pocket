@@ -1,8 +1,10 @@
 extends Control
 
 const CARD_SCENE: PackedScene = preload("res://scenes/ui/card.tscn")
-const ACTION_SCENE: PackedScene = preload("res://scenes/ui/action.tscn")
+const BATTLE_CARD_SCENE: PackedScene = preload("res://scenes/ui/battle_card.tscn")
 const ROW_SCENE: PackedScene = preload("res://scenes/ui/deck_row.tscn")
+const HISTORY_PAGE_SIZE: int = 4
+const BACK_REQUEST_INTERVAL_MS: int = 200
 const SLOT_SCENE: PackedScene = preload("res://scenes/ui/board_slot.tscn")
 var current_screen: String = ""
 var previous_screen: String = "Collection"
@@ -14,6 +16,8 @@ var selected_hand: int = -1
 var selected_mode: String = "unit"
 var modal_callback: Callable
 var reveal_tween: Tween
+var history_page: int = 0
+var _last_back_request_ms: int = -BACK_REQUEST_INTERVAL_MS
 
 @onready var screens: VBoxContainer = $Safe/Layout/Scroll/Screens
 
@@ -26,6 +30,11 @@ func _ready() -> void:
 	_wire_navigation()
 	_wire_screens()
 	$AITimer.timeout.connect(_ai_step)
+	$BattleOverlay/Content/Close.pressed.connect(_close_battle_overlay)
+	$BattleOverlay/Content/Pages/Previous.pressed.connect(_change_history_page.bind(-1))
+	$BattleOverlay/Content/Pages/Next.pressed.connect(_change_history_page.bind(1))
+	screen("Battle").get_node("Selection/Inspect").pressed.connect(_inspect_selection)
+	screen("Battle").get_node("Selection/History").pressed.connect(_show_history)
 	$Modal/Content/Buttons/OK.pressed.connect(_confirm_modal)
 	$Modal/Content/Buttons/Cancel.pressed.connect(_dismiss_modal)
 	get_viewport().size_changed.connect(_update_safe_area)
@@ -47,6 +56,8 @@ func _refresh_header() -> void:
 
 
 func screen(screen_name: String) -> Node:
+	if screen_name == "Battle":
+		return $Safe/Layout/Battle
 	return screens.get_node(screen_name)
 
 
@@ -107,6 +118,10 @@ func show_screen(screen_name: String) -> void:
 		screen_name = "Home"
 	for child: Control in screens.get_children():
 		child.visible = child.name == screen_name
+	$Safe/Layout/Scroll.visible = screen_name != "Battle"
+	$Safe/Layout/Battle.visible = screen_name == "Battle"
+	$BattleOverlay.hide()
+	$ModalBlocker.visible = $Modal.visible
 	current_screen = screen_name
 	$Safe/Layout/Scroll.scroll_vertical = 0
 	$Safe/Layout/Header/Balance.text = (
@@ -284,6 +299,9 @@ func _render_collection() -> void:
 
 
 func _inspect(id: String) -> void:
+	if current_screen == "Battle":
+		_inspect_battle_card(id)
+		return
 	previous_screen = current_screen
 	_clear(screen("Detail").get_node("Card"))
 	var view: CardView = _make_card(
@@ -425,7 +443,7 @@ func _start_battle() -> void:
 		$AITimer.stop()
 		_modal(
 			"Welcome to the arena",
-			"Tap a hand card to deploy a guardian or use a support. Tap your active or bench to attach energy.\n\nChoose an attack below your hand. Attacking ends your turn. Reach three points or leave your rival without a replacement to win.\n\nThe starting player skips their first energy, draw and attack.",
+			"Tap a hand card to deploy a guardian or use a support. Tap your active or bench to attach energy.\n\nUse the fixed action panel below your hand; attacks end your turn. Inspect shows full card rules, and History shows past moves. Attacking ends your turn. Reach three points or leave your rival without a replacement to win.\n\nThe starting player skips their first energy, draw and attack.",
 			_finish_tutorial,
 			false
 		)
@@ -478,8 +496,9 @@ func _render_battle() -> void:
 		_clear(parent)
 		var unit: Dictionary = rules.state.players[index].active
 		if not unit.is_empty():
-			var view: CardView = _make_card(parent, unit.id, -1, unit, true)
-			view.custom_minimum_size = Vector2(306, 240)
+			var view: CardView = _make_battle_card(parent, unit.id, unit)
+			view.custom_minimum_size = Vector2(0, 190)
+			view.size_flags_vertical = Control.SIZE_EXPAND_FILL
 			if index == 0:
 				view.selected.connect(_select_unit.bind(-1))
 			else:
@@ -496,17 +515,12 @@ func _render_battle() -> void:
 	)
 	_clear(battle.get_node("HandScroll/Hand"))
 	for i: int in range(player.hand.size()):
-		var view: CardView = _make_card(
-			battle.get_node("HandScroll/Hand"), player.hand[i], -1, {}, true
-		)
+		var view: CardView = _make_battle_card(battle.get_node("HandScroll/Hand"), player.hand[i])
 		view.selected.connect(_select_hand.bind(i))
 	battle.get_node("Bottom/End").disabled = not your_turn or int(rules.state.replacement) >= 0
 	battle.get_node("Bottom/Concede").disabled = not your_turn or int(rules.state.replacement) >= 0
-	battle.get_node("Log").text = "\n".join(
-		rules.state.log.slice(maxi(0, rules.state.log.size() - 3))
-	)
 	_render_actions()
-	if not your_turn and not $Modal.visible:
+	if not your_turn and not $Modal.visible and not $BattleOverlay.visible:
 		$AITimer.start()
 
 
@@ -516,6 +530,7 @@ func _render_bench(index: int, parent: Node) -> void:
 	for i: int in range(3):
 		var slot: Button = SLOT_SCENE.instantiate()
 		parent.add_child(slot)
+		slot.add_theme_font_size_override("font_size", 18)
 		if i < bench.size():
 			var unit: Dictionary = bench[i]
 			slot.text = (
@@ -545,74 +560,164 @@ func _select_hand(index: int) -> void:
 
 
 func _render_actions() -> void:
-	var parent: Node = screen("Battle").get_node("Actions")
-	_clear(parent)
+	var battle: Node = screen("Battle")
 	var player: Dictionary = rules.state.players[0]
-	var legal: Array[Dictionary] = rules.legal_actions(0)
-	var prompt: String = "Tap your guardian for energy actions, or a hand card to play it."
+	var contextual: Array[Dictionary] = []
+	var attacks: Array[Dictionary] = []
+	var prompt: String = "Choose a creature or hand card."
+	if selected_target >= player.bench.size():
+		selected_target = -1
 	if int(rules.state.replacement) == 0:
-		prompt = "Your active guardian fell. Choose a replacement below."
+		prompt = "Choose a replacement."
 	elif selected_mode == "hand" and selected_hand >= 0 and selected_hand < player.hand.size():
-		var id: String = player.hand[selected_hand]
-		prompt = Catalog.card(id).display_name + " • " + Catalog.card(id).rules_text
-		_add_action(parent, "Inspect " + Catalog.card(id).display_name, _inspect.bind(id))
+		prompt = Catalog.card(player.hand[selected_hand]).display_name
 	else:
-		if selected_target >= player.bench.size():
-			selected_target = -1
 		var unit: Dictionary = rules.get_unit(0, selected_target)
 		if not unit.is_empty():
-			_add_action(
-				parent, "Inspect " + Catalog.card(unit.id).display_name, _inspect.bind(unit.id)
-			)
-	for action: Dictionary in legal:
+			prompt = Catalog.card(unit.id).display_name + " · choose an action"
+	for action: Dictionary in rules.legal_actions(0):
 		var label: String = ""
 		match action.type:
-			"promote":
-				label = "Promote " + Catalog.card(player.bench[int(action.target)].id).display_name
 			"attack":
 				var attack: AttackDefinition = Catalog.card(player.active.id).attacks[int(
 					action.attack
 				)]
-				label = (
-					"%s  •  %d energy  →  %d damage"
-					% [
-						attack.display_name,
-						attack.energy_cost,
-						rules.damage_for(0, int(action.attack))
-					]
+				attacks.append(
+					{
+						"text":
+						(
+							"%s\n%d E · %d damage"
+							% [
+								attack.display_name,
+								attack.energy_cost,
+								rules.damage_for(0, int(action.attack))
+							]
+						),
+						"action": action
+					}
 				)
+			"promote":
+				label = "Promote " + Catalog.card(player.bench[int(action.target)].id).display_name
 			"attach":
 				if selected_mode == "unit" and int(action.target) == selected_target:
-					label = (
-						"Attach energy to "
-						+ Catalog.card(rules.get_unit(0, selected_target).id).display_name
-					)
+					label = "Attach energy"
 			"retreat":
 				if selected_mode == "unit" and selected_target == int(action.target):
-					label = (
-						"Retreat to %s • costs %d energy"
-						% [
-							Catalog.card(player.bench[selected_target].id).display_name,
-							Catalog.card(player.active.id).retreat_cost
-						]
-					)
+					label = "Retreat here · %d E" % Catalog.card(player.active.id).retreat_cost
 			"deploy":
 				if selected_mode == "hand" and selected_hand == int(action.hand):
-					label = "Deploy to your bench"
+					label = "Deploy to bench"
 			"support":
 				if selected_mode == "hand" and selected_hand == int(action.hand):
 					var target: Dictionary = rules.get_unit(0, int(action.target))
-					label = "Use support → " + Catalog.card(target.id).display_name
+					var card: CardDefinition = Catalog.card(player.hand[selected_hand])
+					var verb: String = (
+						"Move from " if card.effect.kind == "MOVE_ENERGY" else "Use on "
+					)
+					label = verb + Catalog.card(target.id).display_name
 		if not label.is_empty():
-			_add_action(parent, label, _perform.bind(action))
-	screen("Battle").get_node("Prompt").text = prompt
+			contextual.append({"text": label, "action": action})
+	_configure_action_slots(battle.get_node("Actions"), contextual)
+	_configure_action_slots(battle.get_node("Attacks"), attacks)
+	battle.get_node("Selection/Prompt").text = prompt
+	battle.get_node("Selection/Prompt").tooltip_text = prompt
 
 
-func _add_action(parent: Node, text: String, callback: Callable) -> void:
-	var button: Button = ACTION_SCENE.instantiate()
-	parent.add_child(button)
-	button.text = text
-	button.pressed.connect(callback)
+func _configure_action_slots(parent: Node, actions: Array[Dictionary]) -> void:
+	# Authored slots reserve a constant height, even when no action is legal.
+	for index: int in range(parent.get_child_count()):
+		var button: Button = parent.get_child(index)
+		for connection: Dictionary in button.pressed.get_connections():
+			button.pressed.disconnect(connection.callable)
+		button.disabled = index >= actions.size()
+		button.text = "—" if button.disabled else str(actions[index].text)
+		button.tooltip_text = button.text
+		if not button.disabled:
+			button.pressed.connect(_perform.bind(actions[index].action))
+
+
+func _make_battle_card(parent: Node, id: String, unit: Dictionary = {}) -> CardView:
+	var view: CardView = BATTLE_CARD_SCENE.instantiate()
+	parent.add_child(view)
+	view.configure(id, -1, unit)
+	view.get_node("Content/Footer").text = (
+		(
+			"%s · %d E · RETREAT %d"
+			% [Catalog.card(id).element.to_upper(), int(unit.energy), Catalog.card(id).retreat_cost]
+		)
+		if not unit.is_empty()
+		else Catalog.card(id).element.to_upper()
+	)
+	return view
+
+
+func _inspect_selection() -> void:
+	var player: Dictionary = rules.state.players[0]
+	if selected_mode == "hand" and selected_hand >= 0 and selected_hand < player.hand.size():
+		_inspect_battle_card(player.hand[selected_hand])
+	else:
+		var unit: Dictionary = rules.get_unit(0, selected_target)
+		if not unit.is_empty():
+			_inspect_battle_card(unit.id)
+
+
+func _inspect_battle_card(id: String) -> void:
+	var card: CardDefinition = Catalog.card(id)
+	$AITimer.stop()
+	$BattleOverlay/Content/Title.text = card.display_name
+	$BattleOverlay/Content/Art.visible = true
+	$BattleOverlay/Content/Art.texture = load(card.art_path)
+	var description: String = "%s · %s\n" % [card.element, card.rarity]
+	if card.is_creature():
+		description += "%d HP · Retreat %d energy\n" % [card.max_hp, card.retreat_cost]
+		for attack: AttackDefinition in card.attacks:
+			description += (
+				"\n%s\n%d energy · %d damage"
+				% [attack.display_name, attack.energy_cost, attack.damage]
+			)
+			if attack.effect != null and attack.effect.amount > 0:
+				description += " · %s %d" % [attack.effect.kind.capitalize(), attack.effect.amount]
+	else:
+		description += card.rules_text
+	$BattleOverlay/Content/Text.text = description + "\n\n" + card.lore
+	$BattleOverlay/Content/Pages.hide()
+	$ModalBlocker.show()
+	$BattleOverlay.show()
+
+
+func _show_history() -> void:
+	history_page = maxi(0, (rules.state.log.size() - 1) / HISTORY_PAGE_SIZE)
+	_render_history()
+
+
+func _change_history_page(direction: int) -> void:
+	history_page += direction
+	_render_history()
+
+
+func _render_history() -> void:
+	$AITimer.stop()
+	var page_count: int = maxi(1, ceili(float(rules.state.log.size()) / HISTORY_PAGE_SIZE))
+	history_page = clampi(history_page, 0, page_count - 1)
+	$BattleOverlay/Content/Title.text = "Battle history · %d / %d" % [history_page + 1, page_count]
+	$BattleOverlay/Content/Art.hide()
+	$BattleOverlay/Content/Text.text = "\n\n".join(
+		rules.state.log.slice(
+			history_page * HISTORY_PAGE_SIZE, (history_page + 1) * HISTORY_PAGE_SIZE
+		)
+	)
+	$BattleOverlay/Content/Pages.show()
+	$BattleOverlay/Content/Pages/Previous.disabled = history_page == 0
+	$BattleOverlay/Content/Pages/Next.disabled = history_page == page_count - 1
+	$ModalBlocker.show()
+	$BattleOverlay.show()
+
+
+func _close_battle_overlay() -> void:
+	$BattleOverlay.hide()
+	$ModalBlocker.hide()
+	if current_screen == "Battle":
+		_render_battle()
 
 
 func _perform(action: Dictionary) -> void:
@@ -644,7 +749,13 @@ func _persist_battle() -> bool:
 
 
 func _ai_step() -> void:
-	if current_screen != "Battle" or rules.current_actor() != 1 or int(rules.state.winner) != -2:
+	if (
+		current_screen != "Battle"
+		or $Modal.visible
+		or $BattleOverlay.visible
+		or rules.current_actor() != 1
+		or int(rules.state.winner) != -2
+	):
 		return
 	var action: Dictionary = BattleAI.choose(rules, 1, int(rules.state.difficulty))
 	if not action.is_empty():
@@ -691,6 +802,7 @@ func _setting_changed(enabled: bool, key: String) -> void:
 
 
 func _modal(title: String, text: String, callback: Callable, cancel: bool = true) -> void:
+	$AITimer.stop()
 	modal_callback = callback
 	$Modal/Content/Title.text = title
 	$Modal/Content/Text.text = text
@@ -733,15 +845,28 @@ func _update_safe_area() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
-		if $Modal.visible:
+		# Some Android devices dispatch one Back gesture twice within milliseconds.
+		# Consume it once so dismissing an overlay cannot also leave its screen.
+		var now: int = Time.get_ticks_msec()
+		if now - _last_back_request_ms < BACK_REQUEST_INTERVAL_MS:
+			return
+		_last_back_request_ms = now
+		if $BattleOverlay.visible:
+			_close_battle_overlay()
+		elif $Modal.visible:
 			_dismiss_modal()
 		elif current_screen == "Detail":
 			show_screen(previous_screen)
 		else:
 			show_screen("Home")
 	elif what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_WM_CLOSE_REQUEST:
+		$AITimer.stop()
 		Profile.save()
 		if what == NOTIFICATION_WM_CLOSE_REQUEST:
 			Audio.shutdown()
 			await get_tree().create_timer(0.15).timeout
 			get_tree().quit()
+
+	elif what == NOTIFICATION_APPLICATION_RESUMED and is_node_ready():
+		if current_screen == "Battle" and not $BattleOverlay.visible and not $Modal.visible:
+			_render_battle()

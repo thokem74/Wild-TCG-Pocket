@@ -78,8 +78,8 @@ OptionButton/colors/font_color = Color(0.12, 0.17, 0.28, 1)
 LineEdit/colors/font_color = Color(0.12, 0.17, 0.28, 1)
 LineEdit/styles/normal = SubResource("Panel")
 CheckButton/colors/font_color = Color(0.12, 0.17, 0.28, 1)
-ScrollContainer/constants/scrollbar_h_separation = 8
-ScrollContainer/constants/scrollbar_v_separation = 8
+ScrollContainer/constants/scrollbar_h_separation = 0
+ScrollContainer/constants/scrollbar_v_separation = 0
 VScrollBar/styles/scroll = SubResource("VerticalTrack")
 VScrollBar/styles/scroll_focus = SubResource("VerticalTrack")
 VScrollBar/styles/grabber = SubResource("VerticalHandle")
@@ -102,6 +102,19 @@ s.label('Element','FLAME • COMMON','Content',13)
 s.label('Rules','1 energy • 20 damage','Content',16)
 s.label('Footer','WILD  /  001','Content',12)
 s.save('scenes/ui/card.tscn')
+# Battle cards use the same input/presentation script, with an authored compact composition.
+s=Scene('BattleCard','PanelContainer','scripts/ui/card_view.gd')
+s.lines+=['custom_minimum_size = Vector2(184, 160)','mouse_filter = 1']
+s.node('Content','VBoxContainer',mouse_filter=2,**{'theme_override_constants/separation':3})
+s.row('Header','Content',mouse_filter=2,**{'theme_override_constants/separation':4})
+s.label('Name','Emberlyn','Content/Header',18,size_flags_horizontal=3,autowrap_mode=0,text_overrun_behavior=3)
+s.label('HP','70 HP','Content/Header',16,autowrap_mode=0)
+s.node('Art','TextureRect','Content',custom_minimum_size='Vector2(0, 64)',size_flags_vertical=3,expand_mode=1,stretch_mode=6,mouse_filter=2)
+s.label('Element','FLAME','Content',13,visible='false')
+s.label('Rules','','Content',16,visible='false')
+s.label('Footer','0 E · RETREAT 1','Content',16,autowrap_mode=0,text_overrun_behavior=3)
+s.save('scenes/ui/battle_card.tscn')
+
 s=Scene('Action','Button');s.lines+=['custom_minimum_size = Vector2(0, 58)','size_flags_horizontal = 3','autowrap_mode = 3'];s.save('scenes/ui/action.tscn')
 s=Scene('DeckRow','HBoxContainer')
 s.button('Card','Card name',size_flags_horizontal=3)
@@ -166,18 +179,27 @@ s.label('DeckTitle','Your deck',size=24);s.node('Deck','OptionButton',custom_min
 s.label('DifficultyTitle','Rival difficulty',size=24);s.node('Difficulty','OptionButton',custom_minimum_size='Vector2(0, 68)')
 s.label('Rules','20 cards. Three points to win.\nFlame beats Gale • Gale beats Tide • Tide beats Flame\nWeakness adds 20 damage. All creatures use universal energy.',size=22)
 s.button('Start','Begin battle  →');s.save('scenes/screens/setup.tscn')
-s=Scene('Battle');s.lines += ['theme_override_constants/separation = 10'];s.label('Status','YOUR TURN',size=25)
-s.label('Score','You 0  ·  Rival 0  /  3',size=24)
-s.label('EnemyInfo','Rival',size=18);s.row('EnemyBench')
-s.row('Actives');s.node('EnemyActive','VBoxContainer','Actives',size_flags_horizontal=3);s.label('Label','RIVAL ACTIVE','Actives/EnemyActive',16);s.node('Card','CenterContainer','Actives/EnemyActive')
-s.node('YourActive','VBoxContainer','Actives',size_flags_horizontal=3);s.label('Label','YOUR ACTIVE','Actives/YourActive',16);s.node('Card','CenterContainer','Actives/YourActive')
-s.row('YourBench');s.label('Resources','',size=18)
-s.label('Prompt','Choose a creature to attach energy, retreat, or inspect.',size=20)
-s.label('HandTitle','YOUR HAND',size=16)
-s.node('HandScroll','ScrollContainer',custom_minimum_size='Vector2(0, 210)',vertical_scroll_mode=0,scroll_deadzone=12)
+s=Scene('Battle');s.lines += ['theme_override_constants/separation = 4','size_flags_vertical = 3']
+s.label('Status','YOUR TURN',size=22,max_lines_visible=1)
+s.label('Score','You 0  ·  Rival 0  /  3',size=20,max_lines_visible=1)
+s.label('EnemyInfo','Rival',size=18,max_lines_visible=1);s.row('EnemyBench')
+s.row('Actives',size_flags_vertical=3)
+for side,title in [('EnemyActive','RIVAL ACTIVE'),('YourActive','YOUR ACTIVE')]:
+ s.node(side,'VBoxContainer','Actives',size_flags_horizontal=3,**{'theme_override_constants/separation':2})
+ s.label('Label',title,'Actives/'+side,16,max_lines_visible=1)
+ s.node('Card','VBoxContainer','Actives/'+side,size_flags_vertical=3)
+s.row('YourBench');s.label('Resources','',size=18,max_lines_visible=1)
+s.label('HandTitle','YOUR HAND · swipe sideways',size=16,max_lines_visible=1)
+s.node('HandScroll','ScrollContainer',custom_minimum_size='Vector2(0, 160)',horizontal_scroll_mode=3,vertical_scroll_mode=0,scroll_deadzone=12)
 s.row('Hand','HandScroll')
-s.node('Actions','VBoxContainer',**{'theme_override_constants/separation':8})
-s.label('Log','',size=19)
+s.row('Selection')
+s.label('Prompt','Choose a creature or hand card.','Selection',18,size_flags_horizontal=3,autowrap_mode=0,text_overrun_behavior=3)
+s.button('Inspect','Inspect','Selection',**{'theme_override_font_sizes/font_size':20})
+s.button('History','History','Selection',**{'theme_override_font_sizes/font_size':20})
+s.node('Actions','GridContainer',columns=2,custom_minimum_size='Vector2(0, 128)',**{'theme_override_constants/h_separation':8,'theme_override_constants/v_separation':4})
+for i in range(4):s.node('Action'+str(i),'Button','Actions',custom_minimum_size='Vector2(0, 62)',size_flags_horizontal=3,disabled='true',autowrap_mode=3,**{'theme_override_font_sizes/font_size':18})
+s.row('Attacks',custom_minimum_size='Vector2(0, 64)')
+for i in range(2):s.button('Attack'+str(i),'','Attacks',size_flags_horizontal=3,disabled='true',autowrap_mode=3,**{'theme_override_font_sizes/font_size':18})
 s.row('Bottom');s.button('End','End turn','Bottom',size_flags_horizontal=3);s.button('Concede','Concede','Bottom',size_flags_horizontal=3)
 s.save('scenes/screens/battle.tscn')
 s=Scene('Results');s.label('Eyebrow','THE ARENA FALLS QUIET',size=17);s.label('Title','Victory',size=54);s.label('Reason','',size=26);s.label('Reward','+30 coins',size=38);s.label('Note','Your guardians await their next adventure.',size=24);s.button('Again','Play again  →');s.button('Home','Return home');s.save('scenes/screens/results.tscn')
@@ -232,11 +254,14 @@ theme_override_colors/font_color = Color(0.7, 0.2, 0.2, 1)
 [node name="Scroll" type="ScrollContainer" parent="Safe/Layout"]
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
 scroll_deadzone = 12
 [node name="Screens" type="VBoxContainer" parent="Safe/Layout/Scroll"]
 size_flags_horizontal = 3
 ''']
-for i,p in enumerate(paths,3):lines.append(f'[node name="{p.title()}" parent="Safe/Layout/Scroll/Screens" instance=ExtResource("{i}")]\nvisible = false\n')
+for i,p in enumerate(paths,3):
+ if p!='battle':lines.append(f'[node name="{p.title()}" parent="Safe/Layout/Scroll/Screens" instance=ExtResource("{i}")]\nvisible = false\n')
+lines.append('[node name="Battle" parent="Safe/Layout" instance=ExtResource("9")]\nvisible = false\n')
 lines+=['[node name="Nav" type="HBoxContainer" parent="Safe/Layout"]\ntheme_override_constants/separation = 8']
 for name,text in [('Home','Home'),('Collection','Cards'),('Decks','Decks'),('Setup','Battle'),('Settings','Settings')]:lines.append(f'[node name="{name}" type="Button" parent="Safe/Layout/Nav"]\ncustom_minimum_size = Vector2(0, 72)\nsize_flags_horizontal = 3\ntheme_override_font_sizes/font_size = 19\ntext = "{text}"')
 lines+=['''[node name="ModalBlocker" type="ColorRect" parent="."]
@@ -283,5 +308,43 @@ text = "Let’s play"
 wait_time = 0.55
 one_shot = true
 ''']
+lines.append('''[node name="BattleOverlay" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -310.0
+offset_top = -440.0
+offset_right = 310.0
+offset_bottom = 440.0
+[node name="Content" type="VBoxContainer" parent="BattleOverlay"]
+theme_override_constants/separation = 12
+[node name="Title" type="Label" parent="BattleOverlay/Content"]
+theme_override_font_sizes/font_size = 28
+autowrap_mode = 3
+[node name="Art" type="TextureRect" parent="BattleOverlay/Content"]
+custom_minimum_size = Vector2(0, 220)
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+[node name="Text" type="Label" parent="BattleOverlay/Content"]
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 22
+autowrap_mode = 3
+[node name="Pages" type="HBoxContainer" parent="BattleOverlay/Content"]
+[node name="Previous" type="Button" parent="BattleOverlay/Content/Pages"]
+text = "Previous"
+custom_minimum_size = Vector2(0, 64)
+size_flags_horizontal = 3
+[node name="Next" type="Button" parent="BattleOverlay/Content/Pages"]
+text = "Next"
+custom_minimum_size = Vector2(0, 64)
+size_flags_horizontal = 3
+[node name="Close" type="Button" parent="BattleOverlay/Content"]
+text = "Back to battle"
+custom_minimum_size = Vector2(0, 64)
+''')
 (ROOT/'scenes/main.tscn').write_text('\n'.join(lines)+'\n')
 print('Created editable UI scenes')

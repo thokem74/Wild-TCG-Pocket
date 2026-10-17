@@ -2,53 +2,64 @@
 [node name="Battle" type="VBoxContainer"]
 theme_override_constants/separation = 16
 size_flags_horizontal = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 4
+size_flags_vertical = 3
 
 [node name="Status" type="Label" parent="."]
 mouse_filter = 2
 text = "YOUR TURN"
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 22
 autowrap_mode = 3
+max_lines_visible = 1
 
 [node name="Score" type="Label" parent="."]
 mouse_filter = 2
 text = "You 0  ·  Rival 0  /  3"
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 20
 autowrap_mode = 3
+max_lines_visible = 1
 
 [node name="EnemyInfo" type="Label" parent="."]
 mouse_filter = 2
 text = "Rival"
 theme_override_font_sizes/font_size = 18
 autowrap_mode = 3
+max_lines_visible = 1
 
 [node name="EnemyBench" type="HBoxContainer" parent="."]
 theme_override_constants/separation = 12
 
 [node name="Actives" type="HBoxContainer" parent="."]
 theme_override_constants/separation = 12
+size_flags_vertical = 3
 
 [node name="EnemyActive" type="VBoxContainer" parent="Actives"]
 size_flags_horizontal = 3
+theme_override_constants/separation = 2
 
 [node name="Label" type="Label" parent="Actives/EnemyActive"]
 mouse_filter = 2
 text = "RIVAL ACTIVE"
 theme_override_font_sizes/font_size = 16
 autowrap_mode = 3
+max_lines_visible = 1
 
-[node name="Card" type="CenterContainer" parent="Actives/EnemyActive"]
+[node name="Card" type="VBoxContainer" parent="Actives/EnemyActive"]
+size_flags_vertical = 3
 
 [node name="YourActive" type="VBoxContainer" parent="Actives"]
 size_flags_horizontal = 3
+theme_override_constants/separation = 2
 
 [node name="Label" type="Label" parent="Actives/YourActive"]
 mouse_filter = 2
 text = "YOUR ACTIVE"
 theme_override_font_sizes/font_size = 16
 autowrap_mode = 3
+max_lines_visible = 1
 
-[node name="Card" type="CenterContainer" parent="Actives/YourActive"]
+[node name="Card" type="VBoxContainer" parent="Actives/YourActive"]
+size_flags_vertical = 3
 
 [node name="YourBench" type="HBoxContainer" parent="."]
 theme_override_constants/separation = 12
@@ -58,35 +69,98 @@ mouse_filter = 2
 text = ""
 theme_override_font_sizes/font_size = 18
 autowrap_mode = 3
-
-[node name="Prompt" type="Label" parent="."]
-mouse_filter = 2
-text = "Choose a creature to attach energy, retreat, or inspect."
-theme_override_font_sizes/font_size = 20
-autowrap_mode = 3
+max_lines_visible = 1
 
 [node name="HandTitle" type="Label" parent="."]
 mouse_filter = 2
-text = "YOUR HAND"
+text = "YOUR HAND · swipe sideways"
 theme_override_font_sizes/font_size = 16
 autowrap_mode = 3
+max_lines_visible = 1
 
 [node name="HandScroll" type="ScrollContainer" parent="."]
-custom_minimum_size = Vector2(0, 210)
+custom_minimum_size = Vector2(0, 160)
+horizontal_scroll_mode = 3
 vertical_scroll_mode = 0
 scroll_deadzone = 12
 
 [node name="Hand" type="HBoxContainer" parent="HandScroll"]
 theme_override_constants/separation = 12
 
-[node name="Actions" type="VBoxContainer" parent="."]
-theme_override_constants/separation = 8
+[node name="Selection" type="HBoxContainer" parent="."]
+theme_override_constants/separation = 12
 
-[node name="Log" type="Label" parent="."]
+[node name="Prompt" type="Label" parent="Selection"]
 mouse_filter = 2
-text = ""
-theme_override_font_sizes/font_size = 19
+text = "Choose a creature or hand card."
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 0
+size_flags_horizontal = 3
+text_overrun_behavior = 3
+
+[node name="Inspect" type="Button" parent="Selection"]
+text = "Inspect"
+custom_minimum_size = Vector2(0, 64)
+theme_override_font_sizes/font_size = 20
+
+[node name="History" type="Button" parent="Selection"]
+text = "History"
+custom_minimum_size = Vector2(0, 64)
+theme_override_font_sizes/font_size = 20
+
+[node name="Actions" type="GridContainer" parent="."]
+columns = 2
+custom_minimum_size = Vector2(0, 128)
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 4
+
+[node name="Action0" type="Button" parent="Actions"]
+custom_minimum_size = Vector2(0, 62)
+size_flags_horizontal = 3
+disabled = true
 autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
+
+[node name="Action1" type="Button" parent="Actions"]
+custom_minimum_size = Vector2(0, 62)
+size_flags_horizontal = 3
+disabled = true
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
+
+[node name="Action2" type="Button" parent="Actions"]
+custom_minimum_size = Vector2(0, 62)
+size_flags_horizontal = 3
+disabled = true
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
+
+[node name="Action3" type="Button" parent="Actions"]
+custom_minimum_size = Vector2(0, 62)
+size_flags_horizontal = 3
+disabled = true
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
+
+[node name="Attacks" type="HBoxContainer" parent="."]
+theme_override_constants/separation = 12
+custom_minimum_size = Vector2(0, 64)
+
+[node name="Attack0" type="Button" parent="Attacks"]
+text = ""
+custom_minimum_size = Vector2(0, 64)
+size_flags_horizontal = 3
+disabled = true
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
+
+[node name="Attack1" type="Button" parent="Attacks"]
+text = ""
+custom_minimum_size = Vector2(0, 64)
+size_flags_horizontal = 3
+disabled = true
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
 
 [node name="Bottom" type="HBoxContainer" parent="."]
 theme_override_constants/separation = 12

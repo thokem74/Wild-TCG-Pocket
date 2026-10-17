@@ -31,17 +31,16 @@ func _ready() -> void:
 	await _settle()
 	var scroll: ScrollContainer = ui.get_node("Safe/Layout/Scroll")
 	var bar: VScrollBar = scroll.get_v_scroll_bar()
-	check(is_equal_approx(bar.size.x, 36.0), "vertical scrollbar has a 36 px hit width")
+	check(not bar.visible, "vertical scrollbar is hidden")
 	check(
-		bar.get_theme_stylebox("grabber").get_minimum_size().y >= 80.0,
-		"vertical handle minimum length"
+		scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_SHOW_NEVER,
+		"native invisible scrolling"
 	)
 	check(scroll.scroll_deadzone == 12, "vertical touch threshold")
-	check(scroll.get_theme_constant("scrollbar_v_separation") == 8, "content gap")
 	check(not scroll.get_h_scroll_bar().visible, "collection does not overflow horizontally")
 	check(
-		ui.screen("Collection").size.x <= scroll.size.x - 36.0 - 8.0,
-		"three card columns fit beside bar"
+		is_equal_approx(ui.screen("Collection").size.x, scroll.size.x),
+		"collection reclaims scrollbar width"
 	)
 	for view: CardView in ui.screen("Collection").get_node("Grid").get_children():
 		if Catalog.card(view.card_id).is_creature():
@@ -58,27 +57,14 @@ func _ready() -> void:
 	check(scroll.scroll_vertical > 0, "wheel over a card reaches its scroll parent")
 	check(ui.current_screen == "Collection", "wheel does not select a card")
 	scroll.scroll_vertical = 0
+	var pan: InputEventPanGesture = InputEventPanGesture.new()
+	pan.position = point
+	pan.delta = Vector2(0, 3)
+	canvas.push_input(pan, true)
 	await _settle()
-	var handle_point: Vector2 = bar.global_position + Vector2(18, 60)
-	_mouse_motion(handle_point)
-	await _settle()
-	await _capture("hover")
-	_mouse_button(handle_point, MOUSE_BUTTON_LEFT, true)
-	await _settle()
-	await _capture("pressed")
-	_mouse_motion(handle_point + Vector2(0, 220), true)
-	_mouse_button(handle_point + Vector2(0, 220), MOUSE_BUTTON_LEFT, false)
-	await _settle()
-	check(scroll.scroll_vertical > 0, "dragging vertical handle moves content")
+	check(scroll.scroll_vertical > 0, "trackpad pan scrolls with hidden bars")
 	scroll.scroll_vertical = 0
 	await _settle()
-	var track_point: Vector2 = bar.global_position + Vector2(18, bar.size.y - 60)
-	_mouse_motion(track_point)
-	_mouse_button(track_point, MOUSE_BUTTON_LEFT, true)
-	_mouse_button(track_point, MOUSE_BUTTON_LEFT, false)
-	await _settle()
-	check(scroll.scroll_vertical > 0, "clicking vertical track pages content")
-
 	# The native ScrollContainer touch path is enabled on desktop for this test only.
 	Input.emulate_touch_from_mouse = true
 	scroll.scroll_vertical = 0
@@ -109,23 +95,22 @@ func _ready() -> void:
 	await _settle()
 	var hand: ScrollContainer = ui.screen("Battle").get_node("HandScroll")
 	var hand_bar: HScrollBar = hand.get_h_scroll_bar()
-	check(is_equal_approx(hand_bar.size.y, 36.0), "horizontal scrollbar has a 36 px hit height")
+	check(not hand_bar.visible, "horizontal scrollbar is hidden")
 	check(
-		hand_bar.get_theme_stylebox("grabber").get_minimum_size().x >= 80.0,
-		"horizontal handle minimum length"
+		hand.horizontal_scroll_mode == ScrollContainer.SCROLL_MODE_SHOW_NEVER,
+		"hand uses invisible native scrolling"
 	)
 	check(hand.scroll_deadzone == 12, "horizontal touch threshold")
-	# Make the horizontal scrollbar visible in the shared screen's clipping rectangle.
-	scroll.scroll_vertical = maxi(0, int(hand.position.y - 350))
-	await _settle()
+	check(not scroll.visible, "battle is outside the page scroller")
+	await _check_battle_layout("normal")
 	await _capture("battle")
-	var hand_point: Vector2 = hand_bar.global_position + Vector2(60, 18)
-	_mouse_motion(hand_point)
-	_mouse_button(hand_point, MOUSE_BUTTON_LEFT, true)
-	_mouse_motion(hand_point + Vector2(120, 0), true)
-	_mouse_button(hand_point + Vector2(120, 0), MOUSE_BUTTON_LEFT, false)
+	var board_position: Vector2 = ui.screen("Battle").global_position
+	_mouse_button(ui.screen("Battle").get_global_rect().get_center(), MOUSE_BUTTON_WHEEL_DOWN, true)
+	_mouse_button(
+		ui.screen("Battle").get_global_rect().get_center(), MOUSE_BUTTON_WHEEL_DOWN, false
+	)
 	await _settle()
-	check(hand.scroll_horizontal > 0, "dragging horizontal handle moves hand")
+	check(ui.screen("Battle").global_position == board_position, "battle cannot scroll vertically")
 	hand.scroll_horizontal = 0
 	await _settle()
 	var hand_card: CardView = hand.get_node("Hand").get_child(0)
@@ -135,10 +120,165 @@ func _ready() -> void:
 	check(hand.scroll_horizontal > 0, "touch swipe beginning on a hand card scrolls")
 	check(ui.selected_hand == -1, "hand swipe does not select a battle card")
 	Input.emulate_touch_from_mouse = false
+	await _battle_scenarios()
 	print("SCROLL TESTS: %d checks, %d failures" % [checks, failures])
 	Audio.shutdown()
 	await get_tree().create_timer(0.15).timeout
 	get_tree().quit(1 if failures else 0)
+
+
+func _check_battle_layout(label: String) -> void:
+	await _settle()
+	var battle: Control = ui.screen("Battle")
+	var nav: Control = ui.get_node("Safe/Layout/Nav")
+	check(
+		battle.get_global_rect().end.y <= nav.global_position.y,
+		label + ": board fits above navigation"
+	)
+	check(nav.get_global_rect().end.y <= canvas.size.y, label + ": navigation fits viewport")
+	for child: Control in battle.get_children():
+		check(
+			battle.get_global_rect().encloses(child.get_global_rect()),
+			label + ": visible " + child.name
+		)
+	for parent_name: String in ["Actions", "Attacks", "Bottom", "Selection"]:
+		for child: Control in battle.get_node(parent_name).get_children():
+			check(
+				battle.get_global_rect().encloses(child.get_global_rect()),
+				label + ": reachable " + child.name
+			)
+
+
+func _battle_scenarios() -> void:
+	var battle: Node = ui.screen("Battle")
+	var player: Dictionary = ui.rules.state.players[0]
+	player.active = {"id": "ashmane", "hp": 80, "energy": 2, "boost": 0}
+	player.bench = []
+	for id: String in ["aurelion", "thornsprite", "cinderhorn"]:
+		player.bench.append({"id": id, "hp": Catalog.card(id).max_hp - 10, "energy": 2, "boost": 0})
+	ui.rules.state.players[1].bench = player.bench.duplicate(true)
+	player.hand = ["dew_vial", "current_relay"]
+	for index: int in range(16):
+		player.hand.append("thornsprite")
+	ui.rules.state.energy_ready = true
+	ui._render_battle()
+	ui._select_hand(0)
+	await _check_battle_layout("four support targets and two attacks")
+	for button: Button in battle.get_node("Actions").get_children():
+		check(not button.disabled, "all four heal targets accessible")
+	for button: Button in battle.get_node("Attacks").get_children():
+		check(not button.disabled, "both attacks accessible")
+	await _capture("full-actions")
+	var layout_height: float = battle.size.y
+	ui._select_hand(1)
+	check(
+		battle.get_node("Actions/Action0").text.begins_with("Move from"),
+		"energy relay identifies donor"
+	)
+	ui._select_unit(0)
+	check(
+		battle.get_node("Actions/Action1").text.begins_with("Retreat"),
+		"retreat reachable beside attachment"
+	)
+	await _check_battle_layout("bench actions")
+	# Repeated selection must replace button callbacks rather than accumulate them.
+	var saved_state: Dictionary = ui.rules.state.duplicate(true)
+	ui._select_unit(0)
+	ui._select_unit(0)
+	battle.get_node("Actions/Action0").pressed.emit()
+	check(
+		int(ui.rules.state.players[0].bench[0].energy) == 3 and not ui.rules.state.energy_ready,
+		"context slot attaches once to selected bench"
+	)
+	ui._select_hand(0)
+	battle.get_node("Actions/Action2").pressed.emit()
+	check(
+		(
+			ui.rules.state.support_used
+			and int(ui.rules.state.players[0].bench[1].hp) == Catalog.card("thornsprite").max_hp
+		),
+		"reused context slot plays support on chosen target"
+	)
+	ui.rules.state = saved_state
+	ui._render_battle()
+	ui._select_hand(0)
+	var before: Dictionary = ui.rules.state.duplicate(true)
+	ui._inspect_selection()
+	check(
+		ui.current_screen == "Battle" and ui.get_node("BattleOverlay").visible,
+		"battle inspection is an overlay"
+	)
+	check(ui.get_node("AITimer").is_stopped(), "inspection stops AI")
+	ui.notification(NOTIFICATION_WM_GO_BACK_REQUEST)
+	ui.notification(NOTIFICATION_WM_GO_BACK_REQUEST)
+	check(
+		ui.current_screen == "Battle" and not ui.get_node("BattleOverlay").visible,
+		"duplicate Android Back dismisses only the overlay"
+	)
+	check(ui.selected_hand == 0 and ui.selected_mode == "hand", "Back preserves selected hand card")
+	check(ui.rules.state == before, "inspection does not change battle state")
+	for id: String in Catalog.cards:
+		ui._inspect_battle_card(id)
+		await _settle()
+		var overlay: Control = ui.get_node("BattleOverlay")
+		check(
+			overlay.get_global_rect().encloses(
+				ui.get_node("BattleOverlay/Content/Close").get_global_rect()
+			),
+			"inspection fits: " + id
+		)
+	ui._close_battle_overlay()
+	ui.rules.state.log = []
+	for index: int in range(25):
+		ui.rules.state.log.append(
+			"Guardian %d attacks the rival and earns a knockout point." % index
+		)
+	ui._show_history()
+	check(ui.history_page == 6, "history opens newest page")
+	ui._change_history_page(-1)
+	check(ui.history_page == 5, "history previous page")
+	ui._change_history_page(-100)
+	check(ui.get_node("BattleOverlay/Content/Pages/Previous").disabled, "history clamps first page")
+	ui._change_history_page(100)
+	check(ui.get_node("BattleOverlay/Content/Pages/Next").disabled, "history clamps last page")
+	await _capture("history")
+	ui._close_battle_overlay()
+	ui.rules.state.turn_count = 1
+	ui.rules.state.energy_ready = false
+	ui._render_battle()
+	await _check_battle_layout("first turn restrictions")
+	check(is_equal_approx(layout_height, battle.size.y), "empty actions preserve board height")
+	for button: Button in battle.get_node("Attacks").get_children():
+		check(button.disabled, "first turn has no attack")
+	ui.rules.state.replacement = 0
+	ui._render_battle()
+	await _check_battle_layout("replacement")
+	check(not battle.get_node("Actions/Action2").disabled, "three promotions accessible")
+	ui.rules.state.replacement = -1
+	ui.rules.state.turn = 1
+	ui.rules.state.turn_count = 4
+	ui._render_battle()
+	ui._inspect_battle_card("ashmane")
+	before = ui.rules.state.duplicate(true)
+	ui._ai_step()
+	check(ui.rules.state == before, "AI cannot move behind inspection")
+	ui._close_battle_overlay()
+	check(not ui.get_node("AITimer").is_stopped(), "closing inspection resumes AI")
+	ui.get_node("AITimer").stop()
+	ui._show_history()
+	ui._ai_step()
+	check(ui.rules.state == before, "AI cannot move behind history")
+	ui._close_battle_overlay()
+	ui.get_node("AITimer").stop()
+	ui.show_screen("Home")
+	ui.show_screen("Battle")
+	ui.get_node("AITimer").stop()
+	check(ui.rules.state == before, "leaving and returning preserves battle")
+	ui.rules.state.turn = 0
+	ui._render_battle()
+	ui.get_node("Safe").add_theme_constant_override("margin_top", 58)
+	ui.get_node("Safe").add_theme_constant_override("margin_bottom", 38)
+	await _check_battle_layout("Android safe area")
 
 
 func _mouse_button(point: Vector2, button: MouseButton, pressed: bool) -> void:

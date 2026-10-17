@@ -14,6 +14,7 @@ theme_override_constants/separation = 4
 mouse_filter = 2
 
 [node name="Name" type="Label" parent="Content/Header"]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "Emberlyn"
 theme_override_font_sizes/font_size = 18
@@ -34,18 +35,21 @@ stretch_mode = 6
 mouse_filter = 2
 
 [node name="Element" type="Label" parent="Content"]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "FLAME • COMMON"
 theme_override_font_sizes/font_size = 13
 autowrap_mode = 3
 
 [node name="Rules" type="Label" parent="Content"]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "1 energy • 20 damage"
 theme_override_font_sizes/font_size = 16
 autowrap_mode = 3
 
 [node name="Footer" type="Label" parent="Content"]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "WILD  /  001"
 theme_override_font_sizes/font_size = 12

@@ -6,6 +6,7 @@ theme_override_constants/separation = 4
 size_flags_vertical = 3
 
 [node name="Status" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "YOUR TURN"
 theme_override_font_sizes/font_size = 22
@@ -13,6 +14,7 @@ autowrap_mode = 3
 max_lines_visible = 1
 
 [node name="Score" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "You 0  ·  Rival 0  /  3"
 theme_override_font_sizes/font_size = 20
@@ -20,6 +22,7 @@ autowrap_mode = 3
 max_lines_visible = 1
 
 [node name="EnemyInfo" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "Rival"
 theme_override_font_sizes/font_size = 18
@@ -38,6 +41,7 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
 [node name="Label" type="Label" parent="Actives/EnemyActive"]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "RIVAL ACTIVE"
 theme_override_font_sizes/font_size = 16
@@ -52,6 +56,7 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
 [node name="Label" type="Label" parent="Actives/YourActive"]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "YOUR ACTIVE"
 theme_override_font_sizes/font_size = 16
@@ -65,6 +70,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 12
 
 [node name="Resources" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = ""
 theme_override_font_sizes/font_size = 18
@@ -72,6 +78,7 @@ autowrap_mode = 3
 max_lines_visible = 1
 
 [node name="HandTitle" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "YOUR HAND · swipe sideways"
 theme_override_font_sizes/font_size = 16

@@ -4,6 +4,7 @@ theme_override_constants/separation = 16
 size_flags_horizontal = 3
 
 [node name="Title" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "Shape your strategy"
 theme_override_font_sizes/font_size = 38
@@ -30,12 +31,14 @@ placeholder_text = "Deck name"
 custom_minimum_size = Vector2(0, 60)
 
 [node name="Validation" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "20 / 20 cards"
 theme_override_font_sizes/font_size = 20
 autowrap_mode = 3
 
 [node name="Hint" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "Tap + to add an owned card, − to remove it. Tap its name to inspect."
 theme_override_font_sizes/font_size = 18

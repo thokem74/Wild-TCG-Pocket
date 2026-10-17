@@ -11,12 +11,14 @@ custom_minimum_size = Vector2(0, 64)
 custom_minimum_size = Vector2(0, 650)
 
 [node name="Description" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = ""
 theme_override_font_sizes/font_size = 24
 autowrap_mode = 3
 
 [node name="Lore" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = ""
 theme_override_font_sizes/font_size = 22

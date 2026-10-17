@@ -14,6 +14,8 @@ class Scene:
   self.lines.append(f'\n[node name="{name}" type="{typ}" parent="{parent}"]')
   self.lines+=['%s = %s'%(k,v) for k,v in props.items()]
  def label(self,name,text,parent='.',size=24,**props):
+  # A positive width floor is required for autowrap; containers still set the final width.
+  if props.get('autowrap_mode',3):props.setdefault('custom_minimum_size','Vector2(1, 0)')
   self.node(name,'Label',parent,mouse_filter=2,text=q(text),**{'theme_override_font_sizes/font_size':size,'autowrap_mode':3,**props})
  def button(self,name,text,parent='.',**props):
   self.node(name,'Button',parent,text=q(text),custom_minimum_size='Vector2(0, 64)',**props)
@@ -247,6 +249,7 @@ text = "W I L D"
 theme_override_font_sizes/font_size = 20
 text = "TCG POCKET"
 [node name="Toast" type="Label" parent="Safe/Layout"]
+custom_minimum_size = Vector2(1, 0)
 visible = false
 autowrap_mode = 3
 theme_override_font_sizes/font_size = 20
@@ -292,6 +295,7 @@ theme_override_constants/separation = 20
 theme_override_font_sizes/font_size = 32
 text = "Welcome to the arena"
 [node name="Text" type="Label" parent="Modal/Content"]
+custom_minimum_size = Vector2(1, 0)
 autowrap_mode = 3
 size_flags_vertical = 3
 text = "Tap cards to deploy guardians or use supports. Tap your active or benched guardian to attach energy. Choose an attack below your hand.\n\nAttacking ends your turn. Knock out three guardians to win, or leave your rival without a replacement."
@@ -322,6 +326,7 @@ offset_bottom = 440.0
 [node name="Content" type="VBoxContainer" parent="BattleOverlay"]
 theme_override_constants/separation = 12
 [node name="Title" type="Label" parent="BattleOverlay/Content"]
+custom_minimum_size = Vector2(1, 0)
 theme_override_font_sizes/font_size = 28
 autowrap_mode = 3
 [node name="Art" type="TextureRect" parent="BattleOverlay/Content"]
@@ -330,10 +335,12 @@ expand_mode = 1
 stretch_mode = 5
 mouse_filter = 2
 [node name="Text" type="Label" parent="BattleOverlay/Content"]
+custom_minimum_size = Vector2(1, 0)
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 22
 autowrap_mode = 3
 [node name="Error" type="Label" parent="BattleOverlay/Content"]
+custom_minimum_size = Vector2(1, 0)
 visible = false
 autowrap_mode = 3
 theme_override_font_sizes/font_size = 18

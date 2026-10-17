@@ -4,6 +4,7 @@ theme_override_constants/separation = 16
 size_flags_horizontal = 3
 
 [node name="Title" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "Make yourself at home"
 theme_override_font_sizes/font_size = 38
@@ -26,12 +27,14 @@ text = "Battle effects"
 custom_minimum_size = Vector2(0, 72)
 
 [node name="Rules" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "HOW TO PLAY\n\nDeploy creatures from your hand onto your bench. Tap a guardian to attach your one energy orb each turn. Attacking ends your turn; energy stays attached.\n\nUse one support and retreat once per turn. Retreat discards the active creature’s listed energy cost.\n\nKnockouts score one point. Choose a replacement from your bench after a knockout. Reach three points to win.\n\nThe first player skips their first draw, energy and attack. Failing to draw loses; 60 turns is a draw."
 theme_override_font_sizes/font_size = 22
 autowrap_mode = 3
 
 [node name="About" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "WILD TCG POCKET • FIRST LIGHT\nOriginal creatures. Offline adventures.\nProgress is saved on this device."
 theme_override_font_sizes/font_size = 18

@@ -35,6 +35,7 @@ stretch_mode = 6
 mouse_filter = 2
 
 [node name="Element" type="Label" parent="Content"]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "FLAME"
 theme_override_font_sizes/font_size = 13
@@ -42,6 +43,7 @@ autowrap_mode = 3
 visible = false
 
 [node name="Rules" type="Label" parent="Content"]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = ""
 theme_override_font_sizes/font_size = 16

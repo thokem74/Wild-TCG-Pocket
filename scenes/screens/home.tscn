@@ -4,12 +4,14 @@ theme_override_constants/separation = 16
 size_flags_horizontal = 3
 
 [node name="Eyebrow" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "THE SKYBOUND COLLECTION"
 theme_override_font_sizes/font_size = 17
 autowrap_mode = 3
 
 [node name="Title" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "A little wonder.\nA wild new world."
 theme_override_font_sizes/font_size = 48
@@ -32,6 +34,7 @@ alignment = 2
 theme_override_constants/separation = 5
 
 [node name="Tag" type="Label" parent="Hero/Overlay"]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "  FIRST LIGHT  /  48 CARDS"
 theme_override_font_sizes/font_size = 18
@@ -39,6 +42,7 @@ autowrap_mode = 3
 theme_override_colors/font_color = Color(1, 0.9, 0.65, 1)
 
 [node name="Name" type="Label" parent="Hero/Overlay"]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "  Guardians of the Wild"
 theme_override_font_sizes/font_size = 32
@@ -46,18 +50,21 @@ autowrap_mode = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 
 [node name="Stats" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "0 / 48 discovered  ·  0 coins"
 theme_override_font_sizes/font_size = 22
 autowrap_mode = 3
 
 [node name="StarterTitle" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "Choose your first guardians"
 theme_override_font_sizes/font_size = 28
 autowrap_mode = 3
 
 [node name="StarterNote" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "Your starter deck is ready to play. Every guardian can use universal energy."
 theme_override_font_sizes/font_size = 20
@@ -94,6 +101,7 @@ text = "Resume battle  →"
 custom_minimum_size = Vector2(0, 64)
 
 [node name="Hint" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "Collect 12, 24, 36 and 48 unique cards to earn bonus packs."
 theme_override_font_sizes/font_size = 19

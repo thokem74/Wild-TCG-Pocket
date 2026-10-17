@@ -4,12 +4,14 @@ theme_override_constants/separation = 16
 size_flags_horizontal = 3
 
 [node name="Title" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "Your field of wonders"
 theme_override_font_sizes/font_size = 38
 autowrap_mode = 3
 
 [node name="Count" type="Label" parent="."]
+custom_minimum_size = Vector2(1, 0)
 mouse_filter = 2
 text = "0 / 48 discovered"
 theme_override_font_sizes/font_size = 20

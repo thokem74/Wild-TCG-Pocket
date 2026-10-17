@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="DeckRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/deck_recipe.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Tide Guardians"
+card_ids = PackedStringArray("pearlfin", "pearlfin", "mistwhale", "mistwhale", "coralisk", "coralisk", "moonseal", "moonseal", "riptalon", "riptalon", "frosthart", "frosthart", "tidekit", "tidekit", "dew_vial", "dew_vial", "moon_nectar", "moon_nectar", "warcry_sigil", "warcry_sigil")

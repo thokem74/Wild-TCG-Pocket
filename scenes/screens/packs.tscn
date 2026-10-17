@@ -1,0 +1,53 @@
+[gd_scene load_steps=1 format=3]
+[node name="Packs" type="VBoxContainer"]
+theme_override_constants/separation = 16
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="."]
+mouse_filter = 2
+text = "A spark of possibility"
+theme_override_font_sizes/font_size = 38
+autowrap_mode = 3
+
+[node name="Description" type="Label" parent="."]
+mouse_filter = 2
+text = "FIRST LIGHT • Five cards per pack\n60 coins, or use a free pack."
+theme_override_font_sizes/font_size = 22
+autowrap_mode = 3
+
+[node name="Odds" type="Label" parent="."]
+mouse_filter = 2
+text = "Slots 1–4: 80% Common · 20% Uncommon\nSlot 5: 90% Rare · 10% Legendary\nEach card within its rarity is equally likely."
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 3
+
+[node name="Balance" type="Label" parent="."]
+mouse_filter = 2
+text = "3 free packs"
+theme_override_font_sizes/font_size = 24
+autowrap_mode = 3
+
+[node name="Open" type="Button" parent="."]
+text = "Open pack  →"
+custom_minimum_size = Vector2(0, 64)
+
+[node name="Counter" type="Label" parent="."]
+mouse_filter = 2
+text = "Your cards are ready"
+theme_override_font_sizes/font_size = 20
+autowrap_mode = 3
+
+[node name="Reveal" type="CenterContainer" parent="."]
+custom_minimum_size = Vector2(0, 540)
+
+[node name="Next" type="Button" parent="."]
+text = "Reveal next card"
+custom_minimum_size = Vector2(0, 64)
+
+[node name="Skip" type="Button" parent="."]
+text = "Reveal all / skip animation"
+custom_minimum_size = Vector2(0, 64)
+
+[node name="Done" type="Button" parent="."]
+text = "Add to collection  →"
+custom_minimum_size = Vector2(0, 64)

@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/card_definition.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/data/attack_definition.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/data/effect_definition.gd" id="3"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("3")
+kind = "DRAW"
+amount = 1
+
+[sub_resource type="Resource" id="Attack1"]
+script = ExtResource("2")
+display_name = "Gust Strike"
+energy_cost = 2
+damage = 40
+effect = SubResource("Effect")
+
+[sub_resource type="Resource" id="Attack2"]
+script = ExtResource("2")
+display_name = "Stormrook Tempest"
+energy_cost = 3
+damage = 60
+
+[resource]
+script = ExtResource("1")
+id = "stormrook"
+display_name = "Stormrook"
+element = "Gale"
+rarity = "Common"
+max_hp = 80
+retreat_cost = 2
+attacks = Array[Resource]([SubResource("Attack1"), SubResource("Attack2")])
+rules_text = "2 energy: 40 damage, draw 1."
+lore = "A guardian of towering storm cloud with golden sun rays."
+art_path = "res://assets/cards/stormrook.png"

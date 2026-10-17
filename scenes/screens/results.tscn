@@ -1,0 +1,42 @@
+[gd_scene load_steps=1 format=3]
+[node name="Results" type="VBoxContainer"]
+theme_override_constants/separation = 16
+size_flags_horizontal = 3
+
+[node name="Eyebrow" type="Label" parent="."]
+mouse_filter = 2
+text = "THE ARENA FALLS QUIET"
+theme_override_font_sizes/font_size = 17
+autowrap_mode = 3
+
+[node name="Title" type="Label" parent="."]
+mouse_filter = 2
+text = "Victory"
+theme_override_font_sizes/font_size = 54
+autowrap_mode = 3
+
+[node name="Reason" type="Label" parent="."]
+mouse_filter = 2
+text = ""
+theme_override_font_sizes/font_size = 26
+autowrap_mode = 3
+
+[node name="Reward" type="Label" parent="."]
+mouse_filter = 2
+text = "+30 coins"
+theme_override_font_sizes/font_size = 38
+autowrap_mode = 3
+
+[node name="Note" type="Label" parent="."]
+mouse_filter = 2
+text = "Your guardians await their next adventure."
+theme_override_font_sizes/font_size = 24
+autowrap_mode = 3
+
+[node name="Again" type="Button" parent="."]
+text = "Play again  →"
+custom_minimum_size = Vector2(0, 64)
+
+[node name="Home" type="Button" parent="."]
+text = "Return home"
+custom_minimum_size = Vector2(0, 64)

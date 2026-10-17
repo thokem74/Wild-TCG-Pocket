@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="DeckRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/deck_recipe.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Flame Guardians"
+card_ids = PackedStringArray("emberlyn", "emberlyn", "cinderhorn", "cinderhorn", "solwing", "solwing", "ashmane", "ashmane", "flarecoil", "flarecoil", "pyrestag", "pyrestag", "coalwyrm", "coalwyrm", "dew_vial", "dew_vial", "moon_nectar", "moon_nectar", "warcry_sigil", "warcry_sigil")

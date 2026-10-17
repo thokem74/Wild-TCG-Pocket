@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/card_definition.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/data/effect_definition.gd" id="2"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("2")
+kind = "HEAL"
+amount = 30
+
+[resource]
+script = ExtResource("1")
+id = "moon_nectar"
+display_name = "Moon Nectar"
+element = "Support"
+rarity = "Common"
+effect = SubResource("Effect")
+rules_text = "Heal 30 HP from one of your creatures."
+lore = "A relic carried by the guardians of the wild."
+art_path = "res://assets/cards/moon_nectar.png"

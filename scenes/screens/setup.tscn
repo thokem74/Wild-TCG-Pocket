@@ -1,0 +1,44 @@
+[gd_scene load_steps=1 format=3]
+[node name="Setup" type="VBoxContainer"]
+theme_override_constants/separation = 16
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="."]
+mouse_filter = 2
+text = "Meet your next rival"
+theme_override_font_sizes/font_size = 38
+autowrap_mode = 3
+
+[node name="Note" type="Label" parent="."]
+mouse_filter = 2
+text = "Win: 30 coins • Loss: 10 coins\nConceding and draws award no coins."
+theme_override_font_sizes/font_size = 22
+autowrap_mode = 3
+
+[node name="DeckTitle" type="Label" parent="."]
+mouse_filter = 2
+text = "Your deck"
+theme_override_font_sizes/font_size = 24
+autowrap_mode = 3
+
+[node name="Deck" type="OptionButton" parent="."]
+custom_minimum_size = Vector2(0, 68)
+
+[node name="DifficultyTitle" type="Label" parent="."]
+mouse_filter = 2
+text = "Rival difficulty"
+theme_override_font_sizes/font_size = 24
+autowrap_mode = 3
+
+[node name="Difficulty" type="OptionButton" parent="."]
+custom_minimum_size = Vector2(0, 68)
+
+[node name="Rules" type="Label" parent="."]
+mouse_filter = 2
+text = "20 cards. Three points to win.\nFlame beats Gale • Gale beats Tide • Tide beats Flame\nWeakness adds 20 damage. All creatures use universal energy."
+theme_override_font_sizes/font_size = 22
+autowrap_mode = 3
+
+[node name="Start" type="Button" parent="."]
+text = "Begin battle  →"
+custom_minimum_size = Vector2(0, 64)

@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/card_definition.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/data/attack_definition.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/data/effect_definition.gd" id="3"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("3")
+kind = "HEAL"
+amount = 10
+
+[sub_resource type="Resource" id="Attack1"]
+script = ExtResource("2")
+display_name = "Spark Strike"
+energy_cost = 2
+damage = 30
+effect = SubResource("Effect")
+
+[sub_resource type="Resource" id="Attack2"]
+script = ExtResource("2")
+display_name = "Flarecoil Tempest"
+energy_cost = 3
+damage = 50
+
+[resource]
+script = ExtResource("1")
+id = "flarecoil"
+display_name = "Flarecoil"
+element = "Flame"
+rarity = "Common"
+max_hp = 110
+retreat_cost = 1
+attacks = Array[Resource]([SubResource("Attack1"), SubResource("Attack2")])
+rules_text = "2 energy: 30 damage, heal 10."
+lore = "A guardian of river of light through a canyon."
+art_path = "res://assets/cards/flarecoil.png"

@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/card_definition.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/data/attack_definition.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/data/effect_definition.gd" id="3"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("3")
+kind = "DAMAGE"
+amount = 0
+
+[sub_resource type="Resource" id="Attack1"]
+script = ExtResource("2")
+display_name = "Gust Strike"
+energy_cost = 2
+damage = 30
+effect = SubResource("Effect")
+
+[sub_resource type="Resource" id="Attack2"]
+script = ExtResource("2")
+display_name = "Verdantail Tempest"
+energy_cost = 3
+damage = 50
+
+[resource]
+script = ExtResource("1")
+id = "verdantail"
+display_name = "Verdantail"
+element = "Gale"
+rarity = "Rare"
+max_hp = 110
+retreat_cost = 1
+attacks = Array[Resource]([SubResource("Attack1"), SubResource("Attack2")])
+rules_text = "2 energy: 30 damage."
+lore = "A guardian of mossy shrine inside a giant hollow tree."
+art_path = "res://assets/cards/verdantail.png"

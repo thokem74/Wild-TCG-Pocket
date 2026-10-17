@@ -1,0 +1,41 @@
+[gd_scene load_steps=1 format=3]
+[node name="Collection" type="VBoxContainer"]
+theme_override_constants/separation = 16
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="."]
+mouse_filter = 2
+text = "Your field of wonders"
+theme_override_font_sizes/font_size = 38
+autowrap_mode = 3
+
+[node name="Count" type="Label" parent="."]
+mouse_filter = 2
+text = "0 / 48 discovered"
+theme_override_font_sizes/font_size = 20
+autowrap_mode = 3
+
+[node name="Filters" type="HBoxContainer" parent="."]
+theme_override_constants/separation = 12
+
+[node name="Element" type="OptionButton" parent="Filters"]
+custom_minimum_size = Vector2(0, 60)
+size_flags_horizontal = 3
+
+[node name="Rarity" type="OptionButton" parent="Filters"]
+custom_minimum_size = Vector2(0, 60)
+size_flags_horizontal = 3
+
+[node name="Ownership" type="OptionButton" parent="Filters"]
+custom_minimum_size = Vector2(0, 60)
+size_flags_horizontal = 3
+
+[node name="Search" type="LineEdit" parent="."]
+theme_override_colors/font_placeholder_color = Color(0.45, 0.48, 0.57, 1)
+placeholder_text = "Search creatures and relics…"
+custom_minimum_size = Vector2(0, 60)
+
+[node name="Grid" type="GridContainer" parent="."]
+columns = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 14

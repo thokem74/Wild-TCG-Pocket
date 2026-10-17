@@ -1,0 +1,23 @@
+[gd_scene load_steps=1 format=3]
+[node name="Detail" type="VBoxContainer"]
+theme_override_constants/separation = 16
+size_flags_horizontal = 3
+
+[node name="Back" type="Button" parent="."]
+text = "← Back"
+custom_minimum_size = Vector2(0, 64)
+
+[node name="Card" type="CenterContainer" parent="."]
+custom_minimum_size = Vector2(0, 650)
+
+[node name="Description" type="Label" parent="."]
+mouse_filter = 2
+text = ""
+theme_override_font_sizes/font_size = 24
+autowrap_mode = 3
+
+[node name="Lore" type="Label" parent="."]
+mouse_filter = 2
+text = ""
+theme_override_font_sizes/font_size = 22
+autowrap_mode = 3

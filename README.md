@@ -1,2 +1,70 @@
-# Wild-TCG-Pocket
-A Pokémon TCG Pocket like game for Android made with Godot
+# Wild TCG Pocket
+
+An original, offline Android card game made with **Godot 4.7.2**. Collect 48 mythical creatures and relics in the First Light set, build 20-card decks, and challenge three AI difficulties.
+
+## Run and build
+
+Open `project.godot` in Godot and press **F6** on `scenes/main.tscn`, or press **F5** from anywhere. The project uses the Compatibility renderer for broad Android support.
+
+```sh
+godot --path .
+godot --headless --path . --export-debug Android builds/wild-tcg-pocket-debug.apk
+```
+
+Android export requires matching Godot export templates, Android SDK, Java 17, and a debug keystore configured in Godot's editor settings. The included preset targets ARM64 with package `org.thokem.wildtcgpocket`. Install the debug APK with `adb install -r builds/wild-tcg-pocket-debug.apk`.
+
+## Play
+
+Choose Flame, Tide, or Gale to receive a ready-to-play starter deck and three free packs. Each pack contains five cards. Win quick battles for **30 coins**, lose for **10**, and spend **60** on a pack. Conceding and draws award no coins. Each unique-card milestone (12, 24, 36, 48) grants a free pack. There are no timers, accounts, advertisements, purchases, or network features.
+
+- **Cards:** filter by element, rarity, ownership, or name. Tap a card for its full attacks and artwork.
+- **Decks:** choose or create a deck, tap +/− to edit, then Save. Decks need exactly 20 owned cards, at least one creature, and at most two copies of each card. Unsaved changes remain while inspecting a card; leaving the deck editor otherwise discards the draft.
+- **Battle:** select a saved deck and difficulty. Tap a hand card, then its action to deploy or play it. Tap your active guardian or bench, then attach energy or retreat. Scroll the battle panel when needed to reach actions and the log; swipe the hand sideways to see more cards.
+- **Settings:** toggle music, sound effects, and reveal animations, or review the rules.
+
+### Rules
+
+Both players start with five cards, including a guaranteed creature automatically placed active. Each has three bench slots. The first player skips their initial draw, energy, and attack. All later turns draw a card and provide one universal energy orb to attach manually.
+
+Attack energy is a requirement, not a payment; attached energy stays after attacking. Attacking ends the turn. One support and one retreat are allowed per turn; retreat discards the printed energy cost. Healing targets a friendly creature. Energy-transfer supports move the exact printed amount from a chosen bench creature to the active creature. Damage boosts expire at the end of the turn, even after retreating.
+
+Flame beats Gale, Gale beats Tide, and Tide beats Flame for **+20 damage**. Knockouts score one point regardless of rarity. Choose a replacement from the bench after a knockout. Three points wins; no replacement or inability to draw loses. Finishing turn 60 is a draw. AI uses the same legal actions as the player and cannot inspect hidden cards.
+
+### Pack odds
+
+Slots 1–4 independently have **80% Common / 20% Uncommon** odds. Slot 5 has **90% Rare / 10% Legendary** odds. Each card within the selected rarity is equally likely. Duplicates are kept; there is no automatic conversion or pity system. The set has 24 Common, 12 Uncommon, 9 Rare, and 3 Legendary cards.
+
+## Project structure
+
+- `scenes/screens/`: editor-visible composition of every screen. `scenes/main.tscn` holds navigation, modal, and AI timer.
+- `scenes/ui/`: reusable card, board slot, deck row, and action scenes. `scenes/audio.tscn` authors the audio players.
+- `scripts/data/` and `data/cards/`: typed card, attack, effect, and deck resources; the catalog autoload loads the explicit ID list in `data/catalog.json`.
+- `scripts/battle/`: serializable battle rules, legal-action validation, and public-information AI scoring.
+- `scripts/profile.gd`: local collection, deck editing, pack transactions, milestones, settings, and exactly-once match rewards.
+- `scripts/ui/`: screen orchestration and card presentation. Visual objects are instantiated from reusable scenes rather than constructed in gameplay code.
+- `assets/cards/`: imagegen illustrations and `prompts.json`, recording the final prompt for each image. Art was generated using the built-in imagegen tool, one illustration per card. Frames and text are native Godot UI.
+- `assets/audio/`: original synthesized music and interaction cues.
+
+### Add or edit a card
+
+Duplicate an existing `.tres` card resource in the Godot editor, set a unique ID, name, element, rarity, art path, and mechanics, then add its ID to `data/catalog.json`. Use `AttackDefinition` resources for attacks and `EffectDefinition` for `DAMAGE`, `HEAL`, `DRAW`, `MOVE_ENERGY`, or `BOOST`. Add its illustration to `assets/cards/`. Deck recipes are editable resources in `data/decks/`.
+
+`tools/create_catalog.py` and `tools/create_scenes.py` record how the initial resources and scenes were authored. Running them **replaces** their generated files; normal editing should happen directly in Godot. Update those authoring scripts too if you intend to regenerate later.
+
+## Saves and interruptions
+
+Progress lives in Godot's `user://progress.json`, with `progress.backup.json` as recovery. Saves write a temporary file and atomically replace the primary. Validated backups recover malformed primary files. Unknown schema versions are not loaded. This is a local save system, not an anti-cheat or cloud-sync service.
+
+Pack payment, generated contents, collection updates, and milestone grants commit before the reveal. Relaunching resumes pending reveals. Battle state is committed after every action and resumes from Home. Each persisted match ID can award its result once. An interrupted AI turn resumes through the same legal-action interface.
+
+## Verification
+
+Use isolated save folders so tests cannot overwrite player progress:
+
+```sh
+XDG_DATA_HOME=/tmp/wild-tcg-tests godot --headless --path . tests/test_runner.tscn
+XDG_DATA_HOME=/tmp/wild-tcg-ui-tests godot --headless --path . tests/ui_runner.tscn
+XDG_DATA_HOME=/tmp/wild-tcg-visual godot --path . tests/visual_runner.tscn
+```
+
+The rules suite covers deck validation, opening hands, turn restrictions, actions, support effects, victory conditions, save/pack recovery, reward idempotence, and 180 deterministic AI matches. The visual runner writes portrait previews into `builds/previews/`. Android smoke-test evidence and final validation notes are recorded in `builds/VALIDATION.md`.

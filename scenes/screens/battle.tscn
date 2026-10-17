@@ -1,0 +1,101 @@
+[gd_scene load_steps=1 format=3]
+[node name="Battle" type="VBoxContainer"]
+theme_override_constants/separation = 16
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Status" type="Label" parent="."]
+mouse_filter = 2
+text = "YOUR TURN"
+theme_override_font_sizes/font_size = 25
+autowrap_mode = 3
+
+[node name="Score" type="Label" parent="."]
+mouse_filter = 2
+text = "You 0  ·  Rival 0  /  3"
+theme_override_font_sizes/font_size = 24
+autowrap_mode = 3
+
+[node name="EnemyInfo" type="Label" parent="."]
+mouse_filter = 2
+text = "Rival"
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 3
+
+[node name="EnemyBench" type="HBoxContainer" parent="."]
+theme_override_constants/separation = 12
+
+[node name="Actives" type="HBoxContainer" parent="."]
+theme_override_constants/separation = 12
+
+[node name="EnemyActive" type="VBoxContainer" parent="Actives"]
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="Actives/EnemyActive"]
+mouse_filter = 2
+text = "RIVAL ACTIVE"
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 3
+
+[node name="Card" type="CenterContainer" parent="Actives/EnemyActive"]
+
+[node name="YourActive" type="VBoxContainer" parent="Actives"]
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="Actives/YourActive"]
+mouse_filter = 2
+text = "YOUR ACTIVE"
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 3
+
+[node name="Card" type="CenterContainer" parent="Actives/YourActive"]
+
+[node name="YourBench" type="HBoxContainer" parent="."]
+theme_override_constants/separation = 12
+
+[node name="Resources" type="Label" parent="."]
+mouse_filter = 2
+text = ""
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 3
+
+[node name="Prompt" type="Label" parent="."]
+mouse_filter = 2
+text = "Choose a creature to attach energy, retreat, or inspect."
+theme_override_font_sizes/font_size = 20
+autowrap_mode = 3
+
+[node name="HandTitle" type="Label" parent="."]
+mouse_filter = 2
+text = "YOUR HAND"
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 3
+
+[node name="HandScroll" type="ScrollContainer" parent="."]
+custom_minimum_size = Vector2(0, 210)
+vertical_scroll_mode = 0
+
+[node name="Hand" type="HBoxContainer" parent="HandScroll"]
+theme_override_constants/separation = 12
+
+[node name="Actions" type="VBoxContainer" parent="."]
+theme_override_constants/separation = 8
+
+[node name="Log" type="Label" parent="."]
+mouse_filter = 2
+text = ""
+theme_override_font_sizes/font_size = 19
+autowrap_mode = 3
+
+[node name="Bottom" type="HBoxContainer" parent="."]
+theme_override_constants/separation = 12
+
+[node name="End" type="Button" parent="Bottom"]
+text = "End turn"
+custom_minimum_size = Vector2(0, 64)
+size_flags_horizontal = 3
+
+[node name="Concede" type="Button" parent="Bottom"]
+text = "Concede"
+custom_minimum_size = Vector2(0, 64)
+size_flags_horizontal = 3

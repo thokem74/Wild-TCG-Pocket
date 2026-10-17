@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CardDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/card_definition.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/data/effect_definition.gd" id="2"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("2")
+kind = "MOVE_ENERGY"
+amount = 2
+
+[resource]
+script = ExtResource("1")
+id = "spirit_bridge"
+display_name = "Spirit Bridge"
+element = "Support"
+rarity = "Uncommon"
+effect = SubResource("Effect")
+rules_text = "Move 2 energy from a chosen ally to your active creature."
+lore = "A relic carried by the guardians of the wild."
+art_path = "res://assets/cards/spirit_bridge.png"

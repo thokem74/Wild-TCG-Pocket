@@ -333,6 +333,40 @@ mouse_filter = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 22
 autowrap_mode = 3
+[node name="Error" type="Label" parent="BattleOverlay/Content"]
+visible = false
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.7, 0.2, 0.2, 1)
+[node name="Actions" type="GridContainer" parent="BattleOverlay/Content"]
+visible = false
+columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+[node name="Action0" type="Button" parent="BattleOverlay/Content/Actions"]
+visible = false
+custom_minimum_size = Vector2(0, 64)
+size_flags_horizontal = 3
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
+[node name="Action1" type="Button" parent="BattleOverlay/Content/Actions"]
+visible = false
+custom_minimum_size = Vector2(0, 64)
+size_flags_horizontal = 3
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
+[node name="Action2" type="Button" parent="BattleOverlay/Content/Actions"]
+visible = false
+custom_minimum_size = Vector2(0, 64)
+size_flags_horizontal = 3
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
+[node name="Action3" type="Button" parent="BattleOverlay/Content/Actions"]
+visible = false
+custom_minimum_size = Vector2(0, 64)
+size_flags_horizontal = 3
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
 [node name="Pages" type="HBoxContainer" parent="BattleOverlay/Content"]
 [node name="Previous" type="Button" parent="BattleOverlay/Content/Pages"]
 text = "Previous"

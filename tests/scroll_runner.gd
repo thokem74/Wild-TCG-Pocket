@@ -119,6 +119,7 @@ func _ready() -> void:
 	await _swipe(point, point - Vector2(120, 0))
 	check(hand.scroll_horizontal > 0, "touch swipe beginning on a hand card scrolls")
 	check(ui.selected_hand == -1, "hand swipe does not select a battle card")
+	check(not ui.get_node("BattleOverlay").visible, "hand swipe does not open overview")
 	Input.emulate_touch_from_mouse = false
 	await _battle_scenarios()
 	print("SCROLL TESTS: %d checks, %d failures" % [checks, failures])

@@ -443,7 +443,7 @@ func _start_battle() -> void:
 		$AITimer.stop()
 		_modal(
 			"Welcome to the arena",
-			"Tap a hand card to deploy a guardian or use a support. Tap your active or bench to attach energy.\n\nUse the fixed action panel below your hand; attacks end your turn. Inspect shows full card rules, and History shows past moves. Attacking ends your turn. Reach three points or leave your rival without a replacement to win.\n\nThe starting player skips their first energy, draw and attack.",
+			"Tap your active, bench, or hand cards to open their overview and choose a legal action.\n\nYou can also use the fixed action panel below your hand. Inspect shows full card rules; History shows past moves. Attacking ends your turn. Reach three points or leave your rival without a replacement to win.\n\nThe starting player skips their first energy, draw and attack.",
 			_finish_tutorial,
 			false
 		)
@@ -500,9 +500,9 @@ func _render_battle() -> void:
 			view.custom_minimum_size = Vector2(0, 190)
 			view.size_flags_vertical = Control.SIZE_EXPAND_FILL
 			if index == 0:
-				view.selected.connect(_select_unit.bind(-1))
+				view.selected.connect(_open_unit_overview.bind(-1))
 			else:
-				view.selected.connect(_inspect.bind(unit.id))
+				view.selected.connect(_inspect_enemy_unit.bind(-1))
 	_render_bench(0, battle.get_node("YourBench"))
 	_render_bench(1, battle.get_node("EnemyBench"))
 	battle.get_node("Resources").text = (
@@ -516,7 +516,7 @@ func _render_battle() -> void:
 	_clear(battle.get_node("HandScroll/Hand"))
 	for i: int in range(player.hand.size()):
 		var view: CardView = _make_battle_card(battle.get_node("HandScroll/Hand"), player.hand[i])
-		view.selected.connect(_select_hand.bind(i))
+		view.selected.connect(_open_hand_overview.bind(i))
 	battle.get_node("Bottom/End").disabled = not your_turn or int(rules.state.replacement) >= 0
 	battle.get_node("Bottom/Concede").disabled = not your_turn or int(rules.state.replacement) >= 0
 	_render_actions()
@@ -538,9 +538,9 @@ func _render_bench(index: int, parent: Node) -> void:
 				% [Catalog.card(unit.id).display_name, int(unit.hp), int(unit.energy)]
 			)
 			if index == 0:
-				slot.pressed.connect(_select_unit.bind(i))
+				slot.pressed.connect(_open_unit_overview.bind(i))
 			else:
-				slot.pressed.connect(_inspect.bind(unit.id))
+				slot.pressed.connect(_inspect_enemy_unit.bind(i))
 		else:
 			slot.text = "Empty bench"
 			slot.disabled = true
@@ -623,7 +623,9 @@ func _render_actions() -> void:
 	battle.get_node("Selection/Prompt").tooltip_text = prompt
 
 
-func _configure_action_slots(parent: Node, actions: Array[Dictionary]) -> void:
+func _configure_action_slots(
+	parent: Node, actions: Array[Dictionary], overview: bool = false
+) -> void:
 	# Authored slots reserve a constant height, even when no action is legal.
 	for index: int in range(parent.get_child_count()):
 		var button: Button = parent.get_child(index)
@@ -633,7 +635,8 @@ func _configure_action_slots(parent: Node, actions: Array[Dictionary]) -> void:
 		button.text = "—" if button.disabled else str(actions[index].text)
 		button.tooltip_text = button.text
 		if not button.disabled:
-			button.pressed.connect(_perform.bind(actions[index].action))
+			var callback: Callable = _perform_overview_action if overview else _perform
+			button.pressed.connect(callback.bind(actions[index].action))
 
 
 func _make_battle_card(parent: Node, id: String, unit: Dictionary = {}) -> CardView:
@@ -651,17 +654,33 @@ func _make_battle_card(parent: Node, id: String, unit: Dictionary = {}) -> CardV
 	return view
 
 
+func _open_unit_overview(target: int) -> void:
+	_select_unit(target)
+	_inspect_selection()
+
+
+func _open_hand_overview(index: int) -> void:
+	_select_hand(index)
+	_inspect_selection()
+
+
+func _inspect_enemy_unit(target: int) -> void:
+	var unit: Dictionary = rules.get_unit(1, target)
+	if not unit.is_empty():
+		_inspect_battle_card(unit.id, unit)
+
+
 func _inspect_selection() -> void:
 	var player: Dictionary = rules.state.players[0]
 	if selected_mode == "hand" and selected_hand >= 0 and selected_hand < player.hand.size():
-		_inspect_battle_card(player.hand[selected_hand])
+		_inspect_battle_card(player.hand[selected_hand], {}, true)
 	else:
 		var unit: Dictionary = rules.get_unit(0, selected_target)
 		if not unit.is_empty():
-			_inspect_battle_card(unit.id)
+			_inspect_battle_card(unit.id, unit, true)
 
 
-func _inspect_battle_card(id: String) -> void:
+func _inspect_battle_card(id: String, unit: Dictionary = {}, own_card: bool = false) -> void:
 	var card: CardDefinition = Catalog.card(id)
 	$AITimer.stop()
 	$BattleOverlay/Content/Title.text = card.display_name
@@ -669,7 +688,19 @@ func _inspect_battle_card(id: String) -> void:
 	$BattleOverlay/Content/Art.texture = load(card.art_path)
 	var description: String = "%s · %s\n" % [card.element, card.rarity]
 	if card.is_creature():
-		description += "%d HP · Retreat %d energy\n" % [card.max_hp, card.retreat_cost]
+		if unit.is_empty():
+			description += "%d HP · Retreat %d energy\n" % [card.max_hp, card.retreat_cost]
+		else:
+			description += (
+				"%d / %d HP · %d energy · Retreat %d\nDamage boost: +%d this turn\n"
+				% [
+					int(unit.hp),
+					card.max_hp,
+					int(unit.energy),
+					card.retreat_cost,
+					int(unit.get("boost", 0))
+				]
+			)
 		for attack: AttackDefinition in card.attacks:
 			description += (
 				"\n%s\n%d energy · %d damage"
@@ -681,8 +712,74 @@ func _inspect_battle_card(id: String) -> void:
 		description += card.rules_text
 	$BattleOverlay/Content/Text.text = description + "\n\n" + card.lore
 	$BattleOverlay/Content/Pages.hide()
+	$BattleOverlay/Content/Error.hide()
+	_render_overview_actions(own_card)
 	$ModalBlocker.show()
 	$BattleOverlay.show()
+
+
+func _overview_actions() -> Array[Dictionary]:
+	var actions: Array[Dictionary] = []
+	var player: Dictionary = rules.state.players[0]
+	for action: Dictionary in rules.legal_actions(0):
+		var label: String = ""
+		if selected_mode == "hand":
+			if int(action.get("hand", -1)) != selected_hand:
+				continue
+			if action.type == "deploy":
+				label = "Deploy to bench"
+			elif action.type == "support":
+				var card: CardDefinition = Catalog.card(player.hand[selected_hand])
+				var target: Dictionary = rules.get_unit(0, int(action.target))
+				label = (
+					("Move from " if card.effect.kind == "MOVE_ENERGY" else "Use on ")
+					+ Catalog.card(target.id).display_name
+				)
+		else:
+			match action.type:
+				"attach":
+					if int(action.target) == selected_target:
+						label = "Attach energy"
+				"retreat":
+					if int(action.target) == selected_target:
+						label = "Retreat here · %d E" % Catalog.card(player.active.id).retreat_cost
+				"promote":
+					if int(action.target) == selected_target:
+						label = "Promote to active"
+				"attack":
+					if selected_target == -1:
+						var attack: AttackDefinition = Catalog.card(player.active.id).attacks[int(
+							action.attack
+						)]
+						label = (
+							"%s\n%d E · %d damage"
+							% [
+								attack.display_name,
+								attack.energy_cost,
+								rules.damage_for(0, int(action.attack))
+							]
+						)
+		if not label.is_empty():
+			actions.append({"text": label, "action": action})
+	return actions
+
+
+func _render_overview_actions(own_card: bool) -> void:
+	var actions: Array[Dictionary] = []
+	if own_card:
+		actions = _overview_actions()
+	var grid: GridContainer = $BattleOverlay/Content/Actions
+	_configure_action_slots(grid, actions, true)
+	for index: int in range(grid.get_child_count()):
+		grid.get_child(index).visible = index < actions.size()
+	grid.visible = not actions.is_empty()
+	$BattleOverlay/Content/Art.custom_minimum_size.y = 180 if grid.visible else 220
+
+
+func _perform_overview_action(action: Dictionary) -> void:
+	if not _apply_battle_action(0, action):
+		# The rules may have changed since the window opened; refresh legal choices.
+		_render_overview_actions(true)
 
 
 func _show_history() -> void:
@@ -701,6 +798,8 @@ func _render_history() -> void:
 	history_page = clampi(history_page, 0, page_count - 1)
 	$BattleOverlay/Content/Title.text = "Battle history · %d / %d" % [history_page + 1, page_count]
 	$BattleOverlay/Content/Art.hide()
+	$BattleOverlay/Content/Actions.hide()
+	$BattleOverlay/Content/Error.hide()
 	$BattleOverlay/Content/Text.text = "\n\n".join(
 		rules.state.log.slice(
 			history_page * HISTORY_PAGE_SIZE, (history_page + 1) * HISTORY_PAGE_SIZE
@@ -724,18 +823,22 @@ func _perform(action: Dictionary) -> void:
 	_apply_battle_action(0, action)
 
 
-func _apply_battle_action(player_index: int, action: Dictionary) -> void:
+func _apply_battle_action(player_index: int, action: Dictionary) -> bool:
 	var before: Dictionary = rules.state.duplicate(true)
 	if not rules.apply_action(player_index, action):
 		_toast("That action is no longer available.")
-		return
+		return false
 	if not _persist_battle():
 		rules.state = before
-		return
+		return false
+	$BattleOverlay.hide()
+	$ModalBlocker.hide()
 	Audio.play_cue("attack" if action.type == "attack" else "tap")
 	selected_hand = -1
 	selected_mode = "unit"
 	_render_battle()
+
+	return true
 
 
 func _persist_battle() -> bool:
@@ -827,6 +930,11 @@ func _dismiss_modal() -> void:
 
 
 func _toast(message: String) -> void:
+	if $BattleOverlay.visible:
+		$BattleOverlay/Content/Error.text = message
+		$BattleOverlay/Content/Error.visible = not message.is_empty()
+		$Safe/Layout/Toast.hide()
+		return
 	$Safe/Layout/Toast.text = message
 	$Safe/Layout/Toast.visible = not message.is_empty()
 

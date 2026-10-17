@@ -19,7 +19,7 @@ Choose Flame, Tide, or Gale to receive a ready-to-play starter deck and three fr
 
 - **Cards:** filter by element, rarity, ownership, or name. Tap a card for its full attacks and artwork.
 - **Decks:** choose or create a deck, tap +/− to edit, then Save. Decks need exactly 20 owned cards, at least one creature, and at most two copies of each card. Unsaved changes remain while inspecting a card; leaving the deck editor otherwise discards the draft.
-- **Battle:** select a saved deck and difficulty. Tap a hand card, then its action to deploy or play it. Tap your active guardian or bench, then attach energy or retreat. The whole battle board and its controls fit on screen without vertical scrolling. Swipe the hand sideways to see more cards. Inspect opens full card rules; History opens paginated past moves. Both pause the AI until you return.
+- **Battle:** select a saved deck and difficulty. Tap your active, benched, or hand cards to open an overview with their legal actions: attack, attach energy, retreat, deploy, or play a support on a chosen target. Enemy overviews are view-only. Deployed creatures show current HP, attached energy, and this-turn damage boosts. Successful actions close the overview; failed saves leave it open with an error. The existing board action panel remains available. The whole battle board and its controls fit on screen without vertical scrolling. Swipe the hand sideways to see more cards. Inspect opens full card rules; History opens paginated past moves. Both pause the AI until you return.
 - **Settings:** toggle music, sound effects, and reveal animations, or review the rules.
 - **Scrolling:** scrollbars are hidden to leave more room for cards. Use the mouse wheel or trackpad on desktop. On Android, swipe over cards to scroll; a card opens only after a tap is released without dragging.
 
@@ -66,8 +66,9 @@ Use isolated save folders so tests cannot overwrite player progress:
 XDG_DATA_HOME=/tmp/wild-tcg-tests godot --headless --path . tests/test_runner.tscn
 XDG_DATA_HOME=/tmp/wild-tcg-ui-tests godot --headless --path . tests/ui_runner.tscn
 XDG_DATA_HOME=/tmp/wild-scroll-tests godot --headless --path . tests/scroll_runner.tscn
+XDG_DATA_HOME=/tmp/wild-overview-tests godot --headless --path . tests/overview_runner.tscn
 XDG_DATA_HOME=/tmp/wild-tcg-visual godot --path . tests/visual_runner.tscn
 # Add -- --tall for 720×1560, or -- --desktop for exact 450×800 previews.
 ```
 
-The rules suite covers deck validation, opening hands, turn restrictions, actions, support effects, victory conditions, save/pack recovery, reward idempotence, and 180 deterministic AI matches. The visual runner writes portrait previews into `builds/previews/`. Android smoke-test evidence and final validation notes are recorded in `builds/VALIDATION.md`; the fixed battle layout and hidden-scrollbar update are documented in `builds/FIXED-BATTLE-VALIDATION.md`.
+The rules suite covers deck validation, opening hands, turn restrictions, actions, support effects, victory conditions, save/pack recovery, reward idempotence, and 180 deterministic AI matches. The overview suite checks own-card taps, legal actions, live stats, view-only enemy cards, AI pausing, and recovery from stale actions or failed saves. The visual runner writes portrait previews into `builds/previews/`. Android smoke-test evidence and final validation notes are recorded in `builds/VALIDATION.md`; the fixed battle layout and hidden-scrollbar update are documented in `builds/FIXED-BATTLE-VALIDATION.md`. Interactive card overview checks are recorded in `builds/OVERVIEW-VALIDATION.md`.

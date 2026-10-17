@@ -39,7 +39,24 @@ content_margin_right = 18.0
 content_margin_top = 12.0
 content_margin_bottom = 12.0
 ''')
-(ROOT/'assets/theme.tres').write_text('''[gd_resource type="Theme" load_steps=6 format=3]
+# Separate axis-specific margins give each handle an 80 px minimum length,
+# while retaining a generous 36 px hit area across the scrolling direction.
+for axis in ('Vertical', 'Horizontal'):
+ for state, shade in [('Track', 'e4e8f3'), ('Handle', '7b65cf'), ('HandleHover', '6b56b8'), ('HandlePressed', '554091')]:
+  width = 36 if axis == 'Vertical' or state == 'Track' else 80
+  height = 36 if axis == 'Horizontal' or state == 'Track' else 80
+  styles.append(f'''[sub_resource type="StyleBoxFlat" id="{axis}{state}"]
+bg_color = {color(shade)}
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_left = 18
+corner_radius_bottom_right = 18
+content_margin_left = {width / 2}
+content_margin_right = {width / 2}
+content_margin_top = {height / 2}
+content_margin_bottom = {height / 2}
+''')
+(ROOT/'assets/theme.tres').write_text('''[gd_resource type="Theme" load_steps=14 format=3]
 '''+ '\n'.join(styles)+'''
 [resource]
 default_font_size = 24
@@ -61,12 +78,24 @@ OptionButton/colors/font_color = Color(0.12, 0.17, 0.28, 1)
 LineEdit/colors/font_color = Color(0.12, 0.17, 0.28, 1)
 LineEdit/styles/normal = SubResource("Panel")
 CheckButton/colors/font_color = Color(0.12, 0.17, 0.28, 1)
+ScrollContainer/constants/scrollbar_h_separation = 8
+ScrollContainer/constants/scrollbar_v_separation = 8
+VScrollBar/styles/scroll = SubResource("VerticalTrack")
+VScrollBar/styles/scroll_focus = SubResource("VerticalTrack")
+VScrollBar/styles/grabber = SubResource("VerticalHandle")
+VScrollBar/styles/grabber_highlight = SubResource("VerticalHandleHover")
+VScrollBar/styles/grabber_pressed = SubResource("VerticalHandlePressed")
+HScrollBar/styles/scroll = SubResource("HorizontalTrack")
+HScrollBar/styles/scroll_focus = SubResource("HorizontalTrack")
+HScrollBar/styles/grabber = SubResource("HorizontalHandle")
+HScrollBar/styles/grabber_highlight = SubResource("HorizontalHandleHover")
+HScrollBar/styles/grabber_pressed = SubResource("HorizontalHandlePressed")
 ''')
 s=Scene('Card','PanelContainer','scripts/ui/card_view.gd')
-s.lines+=['custom_minimum_size = Vector2(200, 300)','mouse_filter = 0']
+s.lines+=['custom_minimum_size = Vector2(200, 300)','mouse_filter = 1']
 s.node('Content','VBoxContainer',mouse_filter=2,**{'theme_override_constants/separation':6})
-s.row('Header','Content',mouse_filter=2)
-s.label('Name','Emberlyn','Content/Header',19,size_flags_horizontal=3)
+s.row('Header','Content',mouse_filter=2,**{'theme_override_constants/separation':4})
+s.label('Name','Emberlyn','Content/Header',18,size_flags_horizontal=3)
 s.label('HP','70','Content/Header',16,autowrap_mode=0)
 s.node('Art','TextureRect','Content',custom_minimum_size='Vector2(0, 158)',size_flags_vertical=3,expand_mode=1,stretch_mode=6,mouse_filter=2)
 s.label('Element','FLAME • COMMON','Content',13)
@@ -145,7 +174,7 @@ s.node('YourActive','VBoxContainer','Actives',size_flags_horizontal=3);s.label('
 s.row('YourBench');s.label('Resources','',size=18)
 s.label('Prompt','Choose a creature to attach energy, retreat, or inspect.',size=20)
 s.label('HandTitle','YOUR HAND',size=16)
-s.node('HandScroll','ScrollContainer',custom_minimum_size='Vector2(0, 210)',vertical_scroll_mode=0)
+s.node('HandScroll','ScrollContainer',custom_minimum_size='Vector2(0, 210)',vertical_scroll_mode=0,scroll_deadzone=12)
 s.row('Hand','HandScroll')
 s.node('Actions','VBoxContainer',**{'theme_override_constants/separation':8})
 s.label('Log','',size=19)
@@ -203,6 +232,7 @@ theme_override_colors/font_color = Color(0.7, 0.2, 0.2, 1)
 [node name="Scroll" type="ScrollContainer" parent="Safe/Layout"]
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
+scroll_deadzone = 12
 [node name="Screens" type="VBoxContainer" parent="Safe/Layout/Scroll"]
 size_flags_horizontal = 3
 ''']

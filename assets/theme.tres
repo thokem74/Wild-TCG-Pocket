@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=6 format=3]
+[gd_resource type="Theme" load_steps=14 format=3]
 [sub_resource type="StyleBoxFlat" id="Panel"]
 bg_color = Color(1.0, 1.0, 1.0, 1)
 border_width_left = 1
@@ -79,6 +79,94 @@ content_margin_right = 18.0
 content_margin_top = 12.0
 content_margin_bottom = 12.0
 
+[sub_resource type="StyleBoxFlat" id="VerticalTrack"]
+bg_color = Color(0.8941176470588236, 0.9098039215686274, 0.9529411764705882, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_left = 18
+corner_radius_bottom_right = 18
+content_margin_left = 18.0
+content_margin_right = 18.0
+content_margin_top = 18.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="VerticalHandle"]
+bg_color = Color(0.4823529411764706, 0.396078431372549, 0.8117647058823529, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_left = 18
+corner_radius_bottom_right = 18
+content_margin_left = 18.0
+content_margin_right = 18.0
+content_margin_top = 40.0
+content_margin_bottom = 40.0
+
+[sub_resource type="StyleBoxFlat" id="VerticalHandleHover"]
+bg_color = Color(0.4196078431372549, 0.33725490196078434, 0.7215686274509804, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_left = 18
+corner_radius_bottom_right = 18
+content_margin_left = 18.0
+content_margin_right = 18.0
+content_margin_top = 40.0
+content_margin_bottom = 40.0
+
+[sub_resource type="StyleBoxFlat" id="VerticalHandlePressed"]
+bg_color = Color(0.3333333333333333, 0.25098039215686274, 0.5686274509803921, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_left = 18
+corner_radius_bottom_right = 18
+content_margin_left = 18.0
+content_margin_right = 18.0
+content_margin_top = 40.0
+content_margin_bottom = 40.0
+
+[sub_resource type="StyleBoxFlat" id="HorizontalTrack"]
+bg_color = Color(0.8941176470588236, 0.9098039215686274, 0.9529411764705882, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_left = 18
+corner_radius_bottom_right = 18
+content_margin_left = 18.0
+content_margin_right = 18.0
+content_margin_top = 18.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="HorizontalHandle"]
+bg_color = Color(0.4823529411764706, 0.396078431372549, 0.8117647058823529, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_left = 18
+corner_radius_bottom_right = 18
+content_margin_left = 40.0
+content_margin_right = 40.0
+content_margin_top = 18.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="HorizontalHandleHover"]
+bg_color = Color(0.4196078431372549, 0.33725490196078434, 0.7215686274509804, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_left = 18
+corner_radius_bottom_right = 18
+content_margin_left = 40.0
+content_margin_right = 40.0
+content_margin_top = 18.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="HorizontalHandlePressed"]
+bg_color = Color(0.3333333333333333, 0.25098039215686274, 0.5686274509803921, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_left = 18
+corner_radius_bottom_right = 18
+content_margin_left = 40.0
+content_margin_right = 40.0
+content_margin_top = 18.0
+content_margin_bottom = 18.0
+
 [resource]
 default_font_size = 24
 Label/colors/font_color = Color(0.12, 0.17, 0.28, 1)
@@ -99,3 +187,15 @@ OptionButton/colors/font_color = Color(0.12, 0.17, 0.28, 1)
 LineEdit/colors/font_color = Color(0.12, 0.17, 0.28, 1)
 LineEdit/styles/normal = SubResource("Panel")
 CheckButton/colors/font_color = Color(0.12, 0.17, 0.28, 1)
+ScrollContainer/constants/scrollbar_h_separation = 8
+ScrollContainer/constants/scrollbar_v_separation = 8
+VScrollBar/styles/scroll = SubResource("VerticalTrack")
+VScrollBar/styles/scroll_focus = SubResource("VerticalTrack")
+VScrollBar/styles/grabber = SubResource("VerticalHandle")
+VScrollBar/styles/grabber_highlight = SubResource("VerticalHandleHover")
+VScrollBar/styles/grabber_pressed = SubResource("VerticalHandlePressed")
+HScrollBar/styles/scroll = SubResource("HorizontalTrack")
+HScrollBar/styles/scroll_focus = SubResource("HorizontalTrack")
+HScrollBar/styles/grabber = SubResource("HorizontalHandle")
+HScrollBar/styles/grabber_highlight = SubResource("HorizontalHandleHover")
+HScrollBar/styles/grabber_pressed = SubResource("HorizontalHandlePressed")

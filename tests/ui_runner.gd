@@ -33,7 +33,26 @@ func _ready() -> void:
 	var card: CardView = ui.screen("Collection").get_node("Grid").get_child(0)
 	var click: InputEventMouseButton = InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
+	click.position = Vector2(30, 30)
+	click.global_position = Vector2(100, 100)
 	click.pressed = true
+	card.gui_input.emit(click)
+	check(ui.current_screen == "Collection", "press waits for a completed tap")
+	var motion: InputEventMouseMotion = InputEventMouseMotion.new()
+	motion.global_position = Vector2(100, 124)
+	card.gui_input.emit(motion)
+	click.pressed = false
+	card.gui_input.emit(click)
+	check(ui.current_screen == "Collection", "drag returning to its origin is not a tap")
+	click.pressed = true
+	card.gui_input.emit(click)
+	card.notification(Control.NOTIFICATION_SCROLL_BEGIN)
+	click.pressed = false
+	card.gui_input.emit(click)
+	check(ui.current_screen == "Collection", "parent scrolling cancels card selection")
+	click.pressed = true
+	card.gui_input.emit(click)
+	click.pressed = false
 	card.gui_input.emit(click)
 	check(ui.current_screen == "Detail", "card mouse/touch emulation opens detail")
 	ui.screen("Detail").get_node("Back").pressed.emit()

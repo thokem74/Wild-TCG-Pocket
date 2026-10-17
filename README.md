@@ -21,6 +21,7 @@ Choose Flame, Tide, or Gale to receive a ready-to-play starter deck and three fr
 - **Decks:** choose or create a deck, tap +/− to edit, then Save. Decks need exactly 20 owned cards, at least one creature, and at most two copies of each card. Unsaved changes remain while inspecting a card; leaving the deck editor otherwise discards the draft.
 - **Battle:** select a saved deck and difficulty. Tap a hand card, then its action to deploy or play it. Tap your active guardian or bench, then attach energy or retreat. Scroll the battle panel when needed to reach actions and the log; swipe the hand sideways to see more cards.
 - **Settings:** toggle music, sound effects, and reveal animations, or review the rules.
+- **Scrolling:** use the wide purple handles or the mouse wheel on desktop. On Android, swipe over cards to scroll; a card opens only after a tap is released without dragging.
 
 ### Rules
 
@@ -64,6 +65,7 @@ Use isolated save folders so tests cannot overwrite player progress:
 ```sh
 XDG_DATA_HOME=/tmp/wild-tcg-tests godot --headless --path . tests/test_runner.tscn
 XDG_DATA_HOME=/tmp/wild-tcg-ui-tests godot --headless --path . tests/ui_runner.tscn
+XDG_DATA_HOME=/tmp/wild-scroll-tests godot --headless --path . tests/scroll_runner.tscn
 XDG_DATA_HOME=/tmp/wild-tcg-visual godot --path . tests/visual_runner.tscn
 ```
 

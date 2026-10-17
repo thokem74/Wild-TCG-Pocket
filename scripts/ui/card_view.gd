@@ -3,8 +3,19 @@ extends PanelContainer
 
 signal selected
 
-var card_id: String = ""
+const TAP_DRAG_THRESHOLD: float = 12.0
+
 static var textures: Dictionary = {}
+
+var card_id: String = ""
+var _tap_pending: bool = false
+var _press_position: Vector2 = Vector2.ZERO
+
+
+func _ready() -> void:
+	gui_input.connect(_on_gui_input)
+	mouse_exited.connect(_cancel_tap)
+	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 
 func configure(id: String, owned: int = -1, unit: Dictionary = {}, compact: bool = false) -> void:
@@ -38,11 +49,37 @@ func configure(id: String, owned: int = -1, unit: Dictionary = {}, compact: bool
 		$Content/Rules.visible = false
 	if owned == 0:
 		modulate = Color(0.7, 0.74, 0.83, 1)
-	gui_input.connect(_on_gui_input)
-	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 
 func _on_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		selected.emit()
-		accept_event()
+	if event is InputEventMouseMotion:
+		if _tap_pending and event.global_position.distance_to(_press_position) > TAP_DRAG_THRESHOLD:
+			_cancel_tap()
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_tap_pending = not event.canceled
+			_press_position = event.global_position
+			# Let the enclosing ScrollContainer observe the press and start a swipe.
+			return
+		var is_tap: bool = (
+			_tap_pending
+			and not event.canceled
+			and event.global_position.distance_to(_press_position) <= TAP_DRAG_THRESHOLD
+			and Rect2(Vector2.ZERO, size).has_point(event.position)
+		)
+		_cancel_tap()
+		if is_tap:
+			selected.emit()
+			accept_event()
+
+
+func _cancel_tap() -> void:
+	_tap_pending = false
+
+
+func _notification(what: int) -> void:
+	# Native touch scrolling can take over before emulated mouse motion arrives.
+	if what == NOTIFICATION_SCROLL_BEGIN or what == NOTIFICATION_APPLICATION_PAUSED:
+		_cancel_tap()
+	elif what == NOTIFICATION_VISIBILITY_CHANGED and not is_visible_in_tree():
+		_cancel_tap()
